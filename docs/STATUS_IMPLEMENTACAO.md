@@ -68,3 +68,21 @@
 - Este fluxo NÃO autentica o aplicativo junto à Shopee, NÃO consulta produtos/comissões automaticamente e NÃO converte links comuns em links de afiliado. O navegador externo mantém login próprio, sem acesso do Sellutions a senhas ou cookies.
 - A pesquisa de produtos pela API continua indisponível até credenciais/autorização oficial. Não existe OAuth de login simples confirmado na API brasileira de afiliados; OAuth do MCP de referência é do servidor MCP e exige App ID/Secret Shopee.
 - Build e testes em dispositivo ainda não confirmados para estas alterações. Acompanhar GitHub Actions.
+
+## Validação concluída da base Android — 22/11/2026
+
+**Compilação GitHub Actions:** sucesso na branch `main`, execução [45081596257](https://github.com/aqnoeu/Sellutions-/actions/runs/45081596257), commit `a3c10ff2`. Artefato `Sellutions-0.1.0-dev-debug` gerado (~2,7 MB).
+
+**Testes Android no emulador:** sucesso na execução [45081596253](https://github.com/aqnoeu/Sellutions-/actions/runs/45081596253), com **2 testes executados, 0 falhas**. O teste instrumentado percorreu as abas Início, Produtos, Ofertas, Grupos e Preferências, abriu/fechou o editor de modelos e comprovou que as duas imagens SVG da identidade carregaram no WebView.
+
+**Correções realizadas:**
+- Substituído o passo de setup do SDK que falhava por instalação explícita do Android SDK 35 e build-tools;
+- Incluído validador estático de JavaScript/interface (`scripts/check-ui.cjs`);
+- Empacotados os SVGs originais de `assets/brand/` como assets Android sem reconstrução;
+- Extraída a imagem PNG original embutida em `sellutions-icone.svg` para o ícone do APK durante o build, sem redesenho;
+- Usados os dois SVGs na interface: ícone completo no cabeçalho e cifrão isolado no banner;
+- Criados testes instrumentados `NavigationTest.java` e workflow no emulador Android.
+
+**Limites do resultado:** os testes instrumentados não equivalem à inspeção visual humana nem a um teste físico no aparelho do usuário. Persistência dos dados, operação de APIs, publicação WhatsApp, Groq e fluxos de afiliado ainda exigem integração e validação próprias.
+
+**Situação:** base Android **compilável e aprovada nos testes básicos automatizados de navegação**. A Fase 1 está tecnicamente validada no emulador; permanece recomendável instalar e inspecionar o APK em aparelho físico antes de considerar sua experiência visual aprovada.
