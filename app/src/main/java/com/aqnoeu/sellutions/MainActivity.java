@@ -47,6 +47,10 @@ public final class MainActivity extends Activity {
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface public void check() { updates.check(); }
             @JavascriptInterface public void authorize() { updates.showCredentialsDialog(); }
+            @JavascriptInterface public String version() {
+                try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; }
+                catch (Exception e) { return "desconhecida"; }
+            }
         }, "AndroidUpdates");
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
