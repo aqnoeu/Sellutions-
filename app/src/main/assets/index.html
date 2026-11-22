@@ -30,7 +30,7 @@ textarea.field{min-height:150px;resize:vertical}
 <header class="apphead"><div class="appbrand"><img class="brand-svg" src="sellutions-icone.svg" alt="Ícone oficial Sellutions"><div><strong>Sellutions</strong><small id="subtitle">Encontrar e anunciar</small></div></div><button class="round" onclick="openTab('settings')" aria-label="Preferências">⚙</button></header>
 <div class="screen" id="scrollScreen">
 <section class="tab active" id="tab-home"><div class="hero"><img class="hero-symbol" src="sellutions-cifrao.svg" alt="" aria-hidden="true"><small>Olá! Vamos encontrar uma oferta?</small><h2>Anuncie em poucos toques.</h2><p>Escolha um produto e onde divulgar. Os textos ficam do seu jeito.</p></div><div class="quick"><button onclick="openTab('catalog')"><span>🛍️</span><div>Explorar<small>Shopee e TikTok Shop</small></div></button><button onclick="openTemplateEditor()"><span>✍️</span><div>Meus modelos<small>Personalizar textos</small></div></button></div><div class="sectionhead"><h2>Ofertas em destaque</h2><button class="linkbtn" onclick="openTab('catalog')">Ver produtos →</button></div><div class="empty"><div class="big">🛍️</div><b>Conecte uma loja</b><p>As ofertas reais aparecerão aqui quando sua API Shopee ou TikTok Shop estiver autorizada.</p></div><div class="sectionhead"><h2>Minhas ofertas</h2><button class="linkbtn" onclick="openTab('queue')">Ver atividade →</button></div><div id="homeStatus" class="shortcut"></div></section>
-<section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><button class="primary full" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice">Shopee: não conectada. TikTok Shop: não conectada. As APIs ainda precisam ser autorizadas.</div><div class="products" id="catalogProducts"></div>
+<section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Todas" onclick="setStore('Todas')">Todas</button><button class="pill" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="Mercado Livre" onclick="setStore('Mercado Livre')">Mercado Livre</button><button class="pill" data-store="Amazon" onclick="setStore('Amazon')">Amazon</button><button class="pill" data-store="SHEIN" onclick="setStore('SHEIN')">SHEIN</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><label class="templabel" for="maxPrice">Preço máximo (R$, opcional)</label><input id="maxPrice" class="field" type="number" min="0" max="100000" placeholder="Ex.: 300" inputmode="numeric"><button class="primary full" id="searchButton" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice">Busca multiloja via serviço público cloo.be. Nenhuma chave necessária para consultar ofertas. TikTok Shop ainda não disponível nesta fonte.</div><div class="products" id="catalogProducts"></div>
 <div class="panel" style="margin-top:17px;padding:15px">
 <h2>Usar minha conta Shopee</h2>
 <p>Entre na Shopee pelo navegador e copie seu próprio link de afiliado. Não é necessário informar senha ou chave ao Sellutions. O login no navegador não conecta a API.</p>
@@ -62,7 +62,8 @@ let templates=restore('templates',[{name:'Oferta rápida',body:initialTemplate}]
 if(!Array.isArray(templates)||!templates.length)templates=[{name:'Oferta rápida',body:initialTemplate}];
 let activeTemplate=Number(restore('activeTemplate',0));
 if(!templates[activeTemplate])activeTemplate=0;
-let groups=restore('groups',[]),queue=restore('queue',[]),selectedStore='Shopee',lastGroups=restore('lastGroups',[]);
+let groups=restore('groups',[]),queue=restore('queue',[]),selectedStore='Todas',lastGroups=restore('lastGroups',[]);
+let liveOffers=[],pendingSearch=false;
 if(!Array.isArray(groups))groups=[];
 if(!Array.isArray(queue))queue=[];
 if(!Array.isArray(lastGroups))lastGroups=[];
@@ -77,8 +78,80 @@ $('scrollScreen').scrollTop=0;render();
 }
 function showSheet(html){$('modalBody').innerHTML=html;$('overlay').classList.add('open')}
 function closeSheet(){$('overlay').classList.remove('open')}
-function setStore(value){selectedStore=value;document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));$('catalogStatus').textContent='Loja selecionada: '+value+'. Aguardando autorização da API.'}
-function searchProducts(){const q=$('search').value.trim();$('catalogStatus').textContent=q?'Não foi possível consultar "'+q+'" na '+selectedStore+': API ainda não conectada.':'Digite o nome de um produto para pesquisar.'}
+function setStore(value){selectedStore=value;document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));renderOffers();$('catalogStatus').textContent=value==='TikTok Shop'?'Esta fonte ainda não disponibiliza TikTok Shop. Selecione outra loja.':'Filtro: '+value+'. A busca utiliza ofertas reais do cloo.be.'}
+function searchProducts(){
+ const q=$('search').value.trim(),price=Number($('maxPrice').value||0);
+ if(!q){$('catalogStatus').textContent='Digite o nome de um produto para pesquisar.';return}
+ if(!window.AndroidShare||typeof window.AndroidShare.searchOffers!=='function'){$('catalogStatus').textContent='Busca disponível no APK Android. Abra o aplicativo instalado para consultar ofertas.';return}
+ if(pendingSearch)return;
+ pendingSearch=true;$('searchButton').disabled=true;$('catalogStatus').textContent='Pesquisando ofertas reais em várias lojas…';
+ $('catalogProducts').innerHTML='';
+ window.AndroidShare.searchOffers(q,Number.isFinite(price)?Math.round(price):0);
+}
+function unwrapMcp(payload){
+ if(payload.error)return {error:typeof payload.error==='string'?payload.error:JSON.stringify(payload.error)};
+ let v=payload.result||payload;
+ if(v.structuredContent)v=v.structuredContent;
+ if(v.content&&Array.isArray(v.content)){
+   const textPart=v.content.find(c=>c.type==='text'&&c.text);
+   if(textPart){try{v=JSON.parse(textPart.text)}catch(e){return {error:'O serviço enviou um formato não reconhecido.'}}}
+ }
+ if(v.data&&typeof v.data==='object')v=v.data;
+ let array=Array.isArray(v)?v:(v.ofertas||v.offers||v.resultados||v.results||v.items||v.produtos||v.products||[]);
+ if(!Array.isArray(array))return {error:'Formato de resposta de ofertas ainda não reconhecido.'};
+ return {items:array};
+}
+function onOffersResponse(raw){
+ pendingSearch=false;$('searchButton').disabled=false;
+ try{
+  const result=unwrapMcp(JSON.parse(raw));
+  if(result.error){$('catalogStatus').textContent=result.error;return}
+  liveOffers=result.items.map(normalizeOffer).filter(o=>o.title&&o.store&&o.url);
+  $('catalogStatus').textContent=liveOffers.length+' ofertas recebidas de cloo.be. Confira preço e disponibilidade na loja. Links desta fonte não são links da sua conta de afiliado.';
+  renderOffers();
+ }catch(e){$('catalogStatus').textContent='Não foi possível interpretar os dados recebidos: '+e.message}
+}
+function safeHttp(v){try{const u=new URL(String(v));return u.protocol==='https:'?u.href:''}catch(e){return ''}}
+function normalizeOffer(o){
+ const title=String(o.titulo||o.title||o.nome||o.name||o.product_name||'');
+ const store=String(o.loja||o.store||o.marketplace||o.plataforma||o.source||'');
+ const price=o.preco_atual??o.preco??o.price??o.current_price??null;
+ const oldPrice=o.preco_anterior??o.old_price??null;
+ const url=safeHttp(o.url_oferta||o.url||o.link||o.link_compra||o.buy_url||o.product_url||o.affiliate_url||'');
+ const image=safeHttp(o.imagem||o.image||o.image_url||o.foto||'');
+ const verified=String(o.verified_at||o.verificado_em||o.updated_at||'');
+ return {title,store,price,oldPrice,url,image,verified};
+}
+function formatPrice(v){if(v===null||v===undefined||v==='')return 'Consultar preço';const n=typeof v==='number'?v:Number(String(v).replace(/[^0-9,.]/g,'').replace(',','.'));return Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):String(v)}
+function renderOffers(){
+ const match=selectedStore==='Todas'?liveOffers:liveOffers.filter(o=>o.store.toLowerCase().includes(selectedStore.toLowerCase()));
+ $('catalogProducts').innerHTML=match.length?match.map(o=>{
+ const i=liveOffers.indexOf(o);
+ return '<article class="product">'+(o.image?'<img src="'+esc(o.image)+'" alt="" loading="lazy" style="width:100%;height:135px;object-fit:contain;border-radius:12px">':'<div class="visual">🛍️</div>')+
+ '<div class="store">'+esc(o.store)+'</div><h3>'+esc(o.title)+'</h3><div class="price">'+esc(formatPrice(o.price))+'</div>'+
+ (o.verified?'<div class="mini">Verificado: '+esc(o.verified)+'</div>':'')+
+ '<button class="primary" onclick="selectLiveOffer('+i+')">Preparar anúncio</button><button class="linkbtn" onclick="openOffer('+i+')">Ver origem</button></article>';
+ }).join(''):'<div class="filterempty">Nenhuma oferta desta loja entre os resultados. Tente outro termo ou selecione Todas.</div>';
+}
+function openOffer(i){const o=liveOffers[i];if(o&&o.url)window.location.href=o.url}
+function selectLiveOffer(i){
+ const o=liveOffers[i];if(!o)return;
+ const price=formatPrice(o.price),message=templates[activeTemplate].body.replace(/\{nome\}/g,o.title).replace(/\{preco\}/g,price).replace(/\{loja\}/g,o.store).replace(/\{link\}/g,o.url);
+ showSheet('<div class="sheethead"><h2 id="modalTitle">Preparar oferta</h2><button class="close" onclick="closeSheet()">×</button></div>'+
+ '<div class="notice">Fonte: cloo.be. Este link pode remunerar o agregador, não sua conta. Substitua pelo seu próprio link de afiliado antes de publicar.</div>'+
+ '<label class="templabel">Link para divulgar (edite para seu link afiliado)</label><input class="field" id="liveLink" value="'+esc(o.url)+'">'+
+ '<label class="templabel">Texto do anúncio</label><textarea class="field" id="offerMessage">'+esc(message)+'</textarea>'+
+ '<button class="primary full" onclick="finalizeLiveOffer('+i+')">Revisar e compartilhar</button>');
+}
+function finalizeLiveOffer(i){
+ const o=liveOffers[i],link=safeHttp($('liveLink').value.trim());if(!o||!link){alert('Informe um link HTTPS válido.');return}
+ let message=$('offerMessage').value.trim();
+ if(!message){alert('Informe o texto do anúncio.');return}
+ if(link!==o.url)message=message.split(o.url).join(link);
+ $('offerMessage').value=message;
+ queue.unshift({id:String(Date.now()),title:o.title,price:o.price,store:o.store,link,status:'prepared'});persist('queue',queue);render();
+ sharePreparedOffer();
+}
 // Sem OAuth da API de afiliados: abrir o portal nao autoriza acesso do Sellutions.
 function openShopee(){window.location.href='https://affiliate.shopee.com.br/'}
 function isShopeeLink(raw){
