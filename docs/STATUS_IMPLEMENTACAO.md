@@ -86,3 +86,11 @@
 **Limites do resultado:** os testes instrumentados não equivalem à inspeção visual humana nem a um teste físico no aparelho do usuário. Persistência dos dados, operação de APIs, publicação WhatsApp, Groq e fluxos de afiliado ainda exigem integração e validação próprias.
 
 **Situação:** base Android **compilável e aprovada nos testes básicos automatizados de navegação**. A Fase 1 está tecnicamente validada no emulador; permanece recomendável instalar e inspecionar o APK em aparelho físico antes de considerar sua experiência visual aprovada.
+
+## Publicação assinada alinhada ao HOME — 22/11/2026
+- Conferidos no HOME os arquivos `.github/workflows/home-release.yml`, `android/app/build.gradle.kts` e `android/app/src/main/java/com/aqnoeu/home/UpdateHelper.java`.
+- O HOME usa **quatro secrets de assinatura** e publica APK assinado + hash SHA-256 em GitHub Releases; **o hash sozinho não permite atualizar**, pois a assinatura deve ser consistente.
+- Ajustado `.github/workflows/android-release.yml` do Sellutions para publicar automaticamente, quando houver mudança do app, a próxima versão `v0.1.x`, APK `sellutions-release.apk`, checksum `sellutions-release.apk.sha256` e informação de `versionCode`.
+- **Bloqueio confirmado por execução real:** GitHub Actions [45084916525](https://github.com/aqnoeu/Sellutions-/actions/runs/45084916525) falhou na etapa "Exigir certificado seguro" porque o repositório não tem os secrets da assinatura configurados. Não foi publicada Release e o updater continua sem canal de downloads real.
+- A conexão GitHub disponível neste chat permite editar arquivos e consultar execuções, **mas não criar secrets do repositório**. Não foi gravada chave privada ou senha em código nem em assets públicos aos colaboradores.
+- Pendentes: configurar assinatura segura (4 secrets), publicar a primeira Release, instalar um APK release e verificar upgrade para a próxima Release no Android.
