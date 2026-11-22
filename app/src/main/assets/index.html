@@ -30,10 +30,23 @@ textarea.field{min-height:150px;resize:vertical}
 <header class="apphead"><div class="appbrand"><img class="brand-svg" src="sellutions-icone.svg" alt="Ícone oficial Sellutions"><div><strong>Sellutions</strong><small id="subtitle">Encontrar e anunciar</small></div></div><button class="round" onclick="openTab('settings')" aria-label="Preferências">⚙</button></header>
 <div class="screen" id="scrollScreen">
 <section class="tab active" id="tab-home"><div class="hero"><img class="hero-symbol" src="sellutions-cifrao.svg" alt="" aria-hidden="true"><small>Olá! Vamos encontrar uma oferta?</small><h2>Anuncie em poucos toques.</h2><p>Escolha um produto e onde divulgar. Os textos ficam do seu jeito.</p></div><div class="quick"><button onclick="openTab('catalog')"><span>🛍️</span><div>Explorar<small>Shopee e TikTok Shop</small></div></button><button onclick="openTemplateEditor()"><span>✍️</span><div>Meus modelos<small>Personalizar textos</small></div></button></div><div class="sectionhead"><h2>Ofertas em destaque</h2><button class="linkbtn" onclick="openTab('catalog')">Ver produtos →</button></div><div class="empty"><div class="big">🛍️</div><b>Conecte uma loja</b><p>As ofertas reais aparecerão aqui quando sua API Shopee ou TikTok Shop estiver autorizada.</p></div><div class="sectionhead"><h2>Minhas ofertas</h2><button class="linkbtn" onclick="openTab('queue')">Ver atividade →</button></div><div id="homeStatus" class="shortcut"></div></section>
-<section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><button class="primary full" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice">Shopee: não conectada. TikTok Shop: não conectada. As APIs ainda precisam ser autorizadas.</div><div class="products" id="catalogProducts"></div></section>
+<section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><button class="primary full" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice">Shopee: não conectada. TikTok Shop: não conectada. As APIs ainda precisam ser autorizadas.</div><div class="products" id="catalogProducts"></div>
+<div class="panel" style="margin-top:17px;padding:15px">
+<h2>Usar minha conta Shopee</h2>
+<p>Entre na Shopee pelo navegador e copie seu próprio link de afiliado. Não é necessário informar senha ou chave ao Sellutions. O login no navegador não conecta a API.</p>
+<button class="ghost full" style="margin:12px 0" onclick="openShopee()">Abrir Shopee Afiliados</button>
+<label class="templabel" for="affiliateUrl">Seu link de afiliado Shopee</label>
+<input class="field" id="affiliateUrl" type="url" placeholder="https://s.shopee.com.br/..." autocomplete="off" inputmode="url">
+<label class="templabel" for="affiliateTitle">Nome do produto</label>
+<input class="field" id="affiliateTitle" placeholder="Ex.: Fone bluetooth" maxlength="180">
+<label class="templabel" for="affiliatePrice">Preço (opcional; confirme na Shopee)</label>
+<input class="field" id="affiliatePrice" placeholder="Ex.: R$ 79,90" maxlength="32">
+<button class="primary full" onclick="prepareShopeeOffer()">Preparar anúncio com meu link</button>
+<div id="affiliateFeedback" class="hint" role="status" aria-live="polite"></div>
+</div></section>
 <section class="tab" id="tab-queue"><h2 class="pageTitle">Minhas ofertas</h2><p class="desc">Preparadas localmente. Nenhum envio é efetuado sem conexão validada.</p><div class="stats"><div class="stat"><b id="queuedStat">0</b><small>Preparadas</small></div><div class="stat"><b id="sentStat">0</b><small>Confirmadas</small></div><div class="stat"><b id="cancelStat">0</b><small>Canceladas</small></div></div><div id="queueList"></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Editar modelos de mensagem</button></section>
 <section class="tab" id="tab-groups"><h2 class="pageTitle">Meus grupos</h2><p class="desc">Organize destinos locais enquanto a conexão WhatsApp não está disponível.</p><div id="groupsList"></div><button class="ghost full" onclick="openNewGroup()">＋ Adicionar grupo local</button><div class="notice">Grupos cadastrados aqui são somente referências locais. A criação, administração e postagem em grupos reais ainda dependem de integração.</div></section>
-<section class="tab" id="tab-settings"><h2 class="pageTitle">Preferências</h2><p class="desc">Configurações e conexões ficam aqui, fora do caminho principal.</p><div class="setting"><div><strong>Lembrar grupos escolhidos</strong><small>Sugerir os últimos destinos de uma oferta.</small></div><input type="checkbox" id="rememberGroups" checked onchange="savePrefs()"></div><div class="sectionhead"><h2>Modelos de publicação</h2></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Personalizar meus modelos</button><div class="sectionhead"><h2>Conexões</h2></div><div class="notice"><b>Shopee:</b> autorização API pendente<br><b>TikTok Shop:</b> autorização API pendente<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
+<section class="tab" id="tab-settings"><h2 class="pageTitle">Preferências</h2><p class="desc">Configurações e conexões ficam aqui, fora do caminho principal.</p><div class="setting"><div><strong>Lembrar grupos escolhidos</strong><small>Sugerir os últimos destinos de uma oferta.</small></div><input type="checkbox" id="rememberGroups" checked onchange="savePrefs()"></div><div class="sectionhead"><h2>Modelos de publicação</h2></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Personalizar meus modelos</button><div class="sectionhead"><h2>Conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>TikTok Shop:</b> autorização API pendente<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
 </div>
 <nav class="bottom"><button class="nav active" data-tab="home" onclick="openTab('home')"><span class="ico">⌂</span>Início</button><button class="nav" data-tab="catalog" onclick="openTab('catalog')"><span class="ico">▦</span>Produtos</button><button class="nav" data-tab="queue" onclick="openTab('queue')"><span class="ico">▤</span>Ofertas</button><button class="nav" data-tab="groups" onclick="openTab('groups')"><span class="ico">♧</span>Grupos</button></nav>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div></div></div>
@@ -66,6 +79,40 @@ function showSheet(html){$('modalBody').innerHTML=html;$('overlay').classList.ad
 function closeSheet(){$('overlay').classList.remove('open')}
 function setStore(value){selectedStore=value;document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));$('catalogStatus').textContent='Loja selecionada: '+value+'. Aguardando autorização da API.'}
 function searchProducts(){const q=$('search').value.trim();$('catalogStatus').textContent=q?'Não foi possível consultar "'+q+'" na '+selectedStore+': API ainda não conectada.':'Digite o nome de um produto para pesquisar.'}
+// Sem OAuth da API de afiliados: abrir o portal nao autoriza acesso do Sellutions.
+function openShopee(){window.location.href='https://affiliate.shopee.com.br/'}
+function isShopeeLink(raw){
+ try{
+  const u=new URL(raw);
+  if(u.protocol!=='https:')return false;
+  const h=u.hostname.toLowerCase();
+  return ['shopee.com.br','www.shopee.com.br','s.shopee.com.br','shope.ee','affiliate.shopee.com.br','s.shopee.co.id'].includes(h);
+ }catch(e){return false}
+}
+function fillAffiliateLink(raw){
+ if(!raw||!isShopeeLink(raw))return;
+ openTab('catalog');setStore('Shopee');$('affiliateUrl').value=raw;
+ $('affiliateFeedback').textContent='Link recebido. Confirme o nome e o preço antes de preparar.';
+}
+function prepareShopeeOffer(){
+ const link=$('affiliateUrl').value.trim(),title=$('affiliateTitle').value.trim(),price=$('affiliatePrice').value.trim();
+ const feedback=$('affiliateFeedback');
+ if(!isShopeeLink(link)){feedback.textContent='Insira um link HTTPS válido da Shopee. Links de outras lojas não são aceitos aqui.';return}
+ if(!title){feedback.textContent='Informe o nome real do produto; não temos acesso automático ao catálogo.';return}
+ const offer={id:String(Date.now()),title,price,store:'Shopee',link,status:'prepared'};
+ queue.unshift(offer);persist('queue',queue);
+ feedback.textContent='Anúncio preparado localmente. Isso não confirma a atribuição de comissão: use seu link de afiliado original.';
+ const body=templates[activeTemplate].body.replace(/\{nome\}/g,title).replace(/\{preco\}/g,price||'Consulte o valor na Shopee').replace(/\{loja\}/g,'Shopee').replace(/\{link\}/g,link);
+ showSheet('<div class="sheethead"><h2 id="modalTitle">Anúncio pronto para revisar</h2><button class="close" onclick="closeSheet()">×</button></div><p class="desc">Confira as informações antes de compartilhar. Nenhuma mensagem foi enviada automaticamente.</p><textarea class="field" id="offerMessage" aria-label="Texto do anúncio">'+esc(body)+'</textarea><button class="primary full" onclick="sharePreparedOffer()">Compartilhar pelo Android</button>');
+ render();
+}
+function sharePreparedOffer(){
+ const message=$('offerMessage').value.trim();
+ if(!message){alert('O anúncio está vazio.');return}
+ if(window.AndroidShare&&typeof window.AndroidShare.shareText==='function')window.AndroidShare.shareText(message);
+ else if(navigator.share)navigator.share({text:message}).catch(()=>{});
+ else {const el=$('offerMessage');el.focus();el.select();alert('Selecione e copie o texto para compartilhar.');}
+}
 function templateHTML(){
 return '<div class="sheethead"><h2 id="modalTitle">Meus modelos de mensagem</h2><button class="close" onclick="closeSheet()">×</button></div>'+
 '<p class="desc">Crie e alterne modelos. As variáveis serão preenchidas com informações reais dos produtos após conectar as lojas.</p>'+
@@ -93,7 +140,7 @@ $('groupsList').innerHTML=groups.length?groups.map(g=>'<div class="groupcard"><d
 $('queuedStat').textContent=queue.filter(x=>x.status==='prepared').length;
 $('sentStat').textContent=queue.filter(x=>x.status==='confirmed').length;
 $('cancelStat').textContent=queue.filter(x=>x.status==='cancelled').length;
-$('queueList').innerHTML=queue.length?queue.map(q=>'<div class="queueitem"><div class="name">'+esc(q.title)+'</div><small>'+esc(q.status)+'</small></div>').join(''):'<div class="empty"><div class="big">📦</div><b>Nenhuma oferta ainda</b><p>Pesquise um produto real após conectar suas APIs.</p></div>';
+$('queueList').innerHTML=queue.length?queue.map(q=>'<div class="queueitem"><div class="name">'+esc(q.title)+'</div><small>'+esc(q.status)+'</small></div>').join(''):'<div class="empty"><div class="big">📦</div><b>Nenhuma oferta ainda</b><p>Importe seu link de afiliado Shopee em Produtos para preparar uma oferta.</p></div>';
 $('homeStatus').textContent=queue.length?queue.length+' registro(s) local(is)':'Nenhuma oferta preparada por enquanto.';
 }
 render();
