@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.graphics.Color;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
 import org.json.JSONObject;
 
 public final class MainActivity extends Activity {
@@ -71,7 +70,7 @@ public final class MainActivity extends Activity {
         if (!"text/plain".equals(intent.getType())) return;
         String shared = intent.getStringExtra(Intent.EXTRA_TEXT);
         if (shared == null) return;
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("https://[^\\\\s<>]+").matcher(shared);
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("https://[^\\s<>]+").matcher(shared);
         if (matcher.find()) {
             String url = matcher.group();
             web.evaluateJavascript("fillAffiliateLink(" + JSONObject.quote(url) + ")", null);
