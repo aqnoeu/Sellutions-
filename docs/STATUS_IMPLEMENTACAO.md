@@ -86,3 +86,12 @@
 **Limites do resultado:** os testes instrumentados não equivalem à inspeção visual humana nem a um teste físico no aparelho do usuário. Persistência dos dados, operação de APIs, publicação WhatsApp, Groq e fluxos de afiliado ainda exigem integração e validação próprias.
 
 **Situação:** base Android **compilável e aprovada nos testes básicos automatizados de navegação**. A Fase 1 está tecnicamente validada no emulador; permanece recomendável instalar e inspecionar o APK em aparelho físico antes de considerar sua experiência visual aprovada.
+
+## Versão Android 0.2.0-dev — branch de atualização (22/11/2026)
+- Branch `release/v0.2.0-affiliate-connectors` criada a partir da base auditada `feat/affiliate-oauth-connectors`.
+- Painel **Preferências → Contas de afiliados** adicionado ao APK Android: estados reais para TikTok Shop Creator (iniciar, verificar e desconectar sessão), conexão Shopee exibida como não autorizada, preservado importador de links próprios.
+- Ponte Android `AffiliateConnector.java`: comunica-se com serviço HTTPS configurado pelo mantenedor, inicia autorização pelo navegador oficial do TikTok, consulta status do token confirmado por backend e não recebe nem inclui App Secret no APK.
+- A base do servidor `server/tiktok-creator-oauth.cjs` continua sendo **piloto não implantado**: não funciona com afiliado real sem aprovação do aplicativo TikTok Creator, credenciais técnicas e escopos oficiais, HTTPS/retorno público e gestão segura de tokens.
+- **Sem dados de terceiros:** nenhum catálogo de agregador ou link remunerado de terceiros incluído. Não apresentar 'Conectada' sem confirmação real do backend.
+- O build debug usa `versionName=0.2.0-dev`, `versionCode=2000`. Download via artifact privado do GitHub Actions.
+- **Atualizações OTA ainda não operacionais:** o repositório não possui Release assinada. Um artifact APK debug com assinatura temporária não pode ser instalado como atualização sobre APK assinado por outra chave. Para atualização in-app, configurar assinatura estável e publicar Release v0.2.0 compatível.
