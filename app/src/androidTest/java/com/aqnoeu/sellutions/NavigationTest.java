@@ -46,6 +46,7 @@ public class NavigationTest {
             assertEquals("true", js(scenario, "(openTab('groups'), document.getElementById('tab-groups').classList.contains('active'))"));
             assertEquals("true", js(scenario, "(openTab('settings'), document.getElementById('tab-settings').classList.contains('active'))"));
             assertEquals("true", js(scenario, "!!document.getElementById('updateStatus') && !!window.AndroidUpdates"));
+            assertEquals("true", js(scenario, "document.getElementById('appVersion').textContent.includes('0.1.0')"));
             assertEquals("\"Teste de atualização\"", js(scenario, "(sellutionsUpdateStatus('Teste de atualização'), document.getElementById('updateStatus').textContent)"));
             assertEquals("true", js(scenario, "(openTemplateEditor(), !!document.getElementById('templateName'))"));
             assertEquals("true", js(scenario, "document.querySelector('.overlay').classList.contains('open')"));
