@@ -16,6 +16,7 @@ import org.json.JSONObject;
 public final class MainActivity extends Activity {
     private WebView web;
     private boolean pageReady = false;
+    private UpdateManager updates;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(Color.rgb(255, 248, 240));
@@ -42,6 +43,11 @@ public final class MainActivity extends Activity {
                 });
             }
         }, "AndroidShare");
+        updates = new UpdateManager(this, web);
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void check() { updates.check(); }
+            @JavascriptInterface public void authorize() { updates.showCredentialsDialog(); }
+        }, "AndroidUpdates");
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
@@ -94,6 +100,7 @@ public final class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if (updates != null) { updates.close(); updates = null; }
         if (web != null) { web.destroy(); web = null; }
         super.onDestroy();
     }
