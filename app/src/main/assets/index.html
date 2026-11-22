@@ -46,7 +46,13 @@ textarea.field{min-height:150px;resize:vertical}
 </div></section>
 <section class="tab" id="tab-queue"><h2 class="pageTitle">Minhas ofertas</h2><p class="desc">Preparadas localmente. Nenhum envio é efetuado sem conexão validada.</p><div class="stats"><div class="stat"><b id="queuedStat">0</b><small>Preparadas</small></div><div class="stat"><b id="sentStat">0</b><small>Confirmadas</small></div><div class="stat"><b id="cancelStat">0</b><small>Canceladas</small></div></div><div id="queueList"></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Editar modelos de mensagem</button></section>
 <section class="tab" id="tab-groups"><h2 class="pageTitle">Meus grupos</h2><p class="desc">Organize destinos locais enquanto a conexão WhatsApp não está disponível.</p><div id="groupsList"></div><button class="ghost full" onclick="openNewGroup()">＋ Adicionar grupo local</button><div class="notice">Grupos cadastrados aqui são somente referências locais. A criação, administração e postagem em grupos reais ainda dependem de integração.</div></section>
-<section class="tab" id="tab-settings"><h2 class="pageTitle">Preferências</h2><p class="desc">Configurações e conexões ficam aqui, fora do caminho principal.</p><div class="setting"><div><strong>Lembrar grupos escolhidos</strong><small>Sugerir os últimos destinos de uma oferta.</small></div><input type="checkbox" id="rememberGroups" checked onchange="savePrefs()"></div><div class="sectionhead"><h2>Modelos de publicação</h2></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Personalizar meus modelos</button><div class="sectionhead"><h2>Conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>TikTok Shop:</b> autorização API pendente<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
+<section class="tab" id="tab-settings"><h2 class="pageTitle">Preferências</h2><p class="desc">Configurações e conexões ficam aqui, fora do caminho principal.</p><div class="setting"><div><strong>Lembrar grupos escolhidos</strong><small>Sugerir os últimos destinos de uma oferta.</small></div><input type="checkbox" id="rememberGroups" checked onchange="savePrefs()"></div><div class="sectionhead"><h2>Modelos de publicação</h2></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Personalizar meus modelos</button><div class="sectionhead"><h2>Atualizações do aplicativo</h2></div>
+<div class="setting"><div><strong>Versões privadas</strong><small>Atualize diretamente pelo Sellutions, sem baixar outro arquivo manualmente.</small></div></div>
+<div class="notice" id="updateStatus" role="status" aria-live="polite">Toque em Verificar atualizações para consultar uma versão mais recente.</div>
+<button class="primary full" onclick="checkSellutionsUpdate()">↻ Verificar atualizações</button>
+<button class="ghost full" style="margin-top:9px" onclick="authorizeSellutionsUpdates()">🔒 Autorizar acesso às atualizações</button>
+<p class="desc" style="margin-top:10px">Como o repositório é privado, o acesso é configurado uma vez por aparelho. A instalação continua exigindo sua confirmação no Android.</p>
+<div class="sectionhead"><h2>Conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>TikTok Shop:</b> autorização API pendente<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
 </div>
 <nav class="bottom"><button class="nav active" data-tab="home" onclick="openTab('home')"><span class="ico">⌂</span>Início</button><button class="nav" data-tab="catalog" onclick="openTab('catalog')"><span class="ico">▦</span>Produtos</button><button class="nav" data-tab="queue" onclick="openTab('queue')"><span class="ico">▤</span>Ofertas</button><button class="nav" data-tab="groups" onclick="openTab('groups')"><span class="ico">♧</span>Grupos</button></nav>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div></div></div>
@@ -112,6 +118,15 @@ function sharePreparedOffer(){
  if(window.AndroidShare&&typeof window.AndroidShare.shareText==='function')window.AndroidShare.shareText(message);
  else if(navigator.share)navigator.share({text:message}).catch(()=>{});
  else {const el=$('offerMessage');el.focus();el.select();alert('Selecione e copie o texto para compartilhar.');}
+}
+function sellutionsUpdateStatus(message){const el=$('updateStatus');if(el)el.textContent=String(message);}
+function checkSellutionsUpdate(){
+ if(window.AndroidUpdates&&typeof window.AndroidUpdates.check==='function')window.AndroidUpdates.check();
+ else sellutionsUpdateStatus('Verificação disponível somente no aplicativo Android instalado.');
+}
+function authorizeSellutionsUpdates(){
+ if(window.AndroidUpdates&&typeof window.AndroidUpdates.authorize==='function')window.AndroidUpdates.authorize();
+ else sellutionsUpdateStatus('Configuração disponível somente no aplicativo Android instalado.');
 }
 function templateHTML(){
 return '<div class="sheethead"><h2 id="modalTitle">Meus modelos de mensagem</h2><button class="close" onclick="closeSheet()">×</button></div>'+
