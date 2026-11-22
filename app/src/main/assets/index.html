@@ -53,7 +53,21 @@ textarea.field{min-height:150px;resize:vertical}
 <button class="primary full" onclick="checkSellutionsUpdate()">↻ Verificar atualizações</button>
 <button class="ghost full" style="margin-top:9px" onclick="authorizeSellutionsUpdates()">🔒 Autorizar acesso às atualizações</button>
 <p class="desc" style="margin-top:10px">Como o repositório é privado, o acesso é configurado uma vez por aparelho. A instalação continua exigindo sua confirmação no Android.</p>
-<div class="sectionhead"><h2>Conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>TikTok Shop:</b> autorização API pendente<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
+<div class="sectionhead"><h2>Contas de afiliados</h2></div>
+<div class="panel" style="padding:16px">
+  <div class="setting"><div><strong>🛍️ Shopee Afiliados</strong><small>Conta pessoal · API de afiliados brasileira</small></div><span style="font-size:11px;color:#9e6714">Não conectada</span></div>
+  <p class="desc">A Shopee ainda não disponibilizou ao Sellutions uma autorização de afiliado por login. Login de vendedor não serve para suas comissões. Seus links próprios continuam disponíveis na aba Produtos.</p>
+  <button class="ghost full" onclick="openTab('catalog')">Usar meu próprio link Shopee</button>
+  <div class="setting"><div><strong>🎵 TikTok Shop Creator</strong><small>Autorização oficial do criador, com consentimento</small></div><span id="tiktokConnectionLabel" style="font-size:11px;color:#9e6714">Não conectada</span></div>
+  <div class="notice" id="affiliateConnectionStatus" role="status" aria-live="polite">A conexão exige um aplicativo TikTok Shop Creator aprovado e um serviço de integração seguro.</div>
+  <button class="primary full" style="margin-top:10px" onclick="connectTikTokShop()">Conectar TikTok Shop</button>
+  <div class="templateactions"><button class="ghost" onclick="checkTikTokShop()">Verificar conexão</button><button class="ghost" onclick="disconnectTikTokShop()">Desconectar</button></div>
+  <details style="margin-top:10px"><summary style="color:#76594c;font-size:12px">Configuração técnica do mantenedor</summary>
+  <p class="desc">Somente configure o endereço HTTPS de um servidor Sellutions que já tenha sido aprovado pela plataforma. Não informe aqui senhas, App Secrets ou tokens de afiliado.</p>
+  <label class="templabel" for="affiliateServerUrl">Endereço HTTPS do servidor</label>
+  <input class="field" id="affiliateServerUrl" type="url" placeholder="https://seu-servidor.example" autocomplete="off">
+  <button class="ghost full" onclick="saveAffiliateEndpoint()">Salvar endereço</button></details>
+</div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
 </div>
 <nav class="bottom"><button class="nav active" data-tab="home" onclick="openTab('home')"><span class="ico">⌂</span>Início</button><button class="nav" data-tab="catalog" onclick="openTab('catalog')"><span class="ico">▦</span>Produtos</button><button class="nav" data-tab="queue" onclick="openTab('queue')"><span class="ico">▤</span>Ofertas</button><button class="nav" data-tab="groups" onclick="openTab('groups')"><span class="ico">♧</span>Grupos</button></nav>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div></div></div>
@@ -81,7 +95,7 @@ document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active',e.id===
 document.querySelectorAll('.nav').forEach(e=>e.classList.toggle('active',e.dataset.tab===tab));
 $('subtitle').textContent=({home:'Encontrar e anunciar',catalog:'Escolha o produto',queue:'Acompanhe suas ofertas',groups:'Seus grupos',settings:'Tudo do seu jeito'})[tab];
 $('scrollScreen').scrollTop=0;
-if(tab==='settings')refreshAppVersion();
+if(tab==='settings'){refreshAppVersion();if(window.AndroidAffiliate)window.AndroidAffiliate.init();}
 render();
 }
 function showSheet(html){$('modalBody').innerHTML=html;$('overlay').classList.add('open')}
@@ -121,6 +135,30 @@ function sharePreparedOffer(){
  if(window.AndroidShare&&typeof window.AndroidShare.shareText==='function')window.AndroidShare.shareText(message);
  else if(navigator.share)navigator.share({text:message}).catch(()=>{});
  else {const el=$('offerMessage');el.focus();el.select();alert('Selecione e copie o texto para compartilhar.');}
+}
+function onAffiliateConnector(status,message){
+ const e=$('affiliateConnectionStatus');if(e)e.textContent=message;
+ const label=$('tiktokConnectionLabel');if(label){
+   label.textContent=status==='connected'?'Conectada':status==='pending'?'Aguardando autorização':'Não conectada';
+   label.style.color=status==='connected'?'#13894d':'#9e6714';
+ }
+}
+function connectTikTokShop(){
+ if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.startTikTok==='function')window.AndroidAffiliate.startTikTok();
+ else onAffiliateConnector('error','Conexão disponível somente no APK Android.');
+}
+function checkTikTokShop(){
+ if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.checkTikTok==='function')window.AndroidAffiliate.checkTikTok();
+ else onAffiliateConnector('error','Abra o APK Android.');
+}
+function disconnectTikTokShop(){
+ if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.disconnectTikTok==='function')window.AndroidAffiliate.disconnectTikTok();
+ else onAffiliateConnector('disconnected','Não conectada.');
+}
+function saveAffiliateEndpoint(){
+ const u=$('affiliateServerUrl').value.trim();
+ if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.configureBackend==='function')window.AndroidAffiliate.configureBackend(u);
+ else onAffiliateConnector('error','Configuração disponível somente no APK Android.');
 }
 function refreshAppVersion(){
  const el=$('appVersion'); if(!el)return;
