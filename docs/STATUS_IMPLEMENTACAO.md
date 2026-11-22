@@ -59,3 +59,12 @@
 - **Identidade vetorial:** preservado o estilo e cifrão provisório do mockup. A substituição pelo **SVG original do repositório permanece pendente**, porque os caminhos `logo.svg`, `icone.svg`, `assets/logo.svg`, `assets/icon.svg` não foram encontrados nas consultas; não recriar as artes.
 - **Permanecem pendentes:** uso da API real Shopee/TikTok Shop, geração Groq, armazenamento seguro de chaves, WhatsApp, captura flutuante e entrega de APK validado.
 - **Critério para conclusão da Fase 1:** compilação bem-sucedida, instalação e teste de navegação/modelos, e aplicação dos SVGs originais.
+
+
+## Importação de links Shopee sem API — 22/11/2026
+- Adicionada na aba Produtos uma opção para abrir o portal Shopee Afiliados no navegador externo e inserir um link HTTPS da Shopee já gerado pelo próprio usuário.
+- O Sellutions permite preencher nome e preço manualmente, aplicar o modelo local de mensagem, revisar/editar e abrir o menu nativo Compartilhar do Android.
+- Links enviados ao Sellutions por ACTION_SEND (text/plain) são reconhecidos e pré-preenchidos no formulário, caso pertençam a domínios Shopee autorizados.
+- Este fluxo NÃO autentica o aplicativo junto à Shopee, NÃO consulta produtos/comissões automaticamente e NÃO converte links comuns em links de afiliado. O navegador externo mantém login próprio, sem acesso do Sellutions a senhas ou cookies.
+- A pesquisa de produtos pela API continua indisponível até credenciais/autorização oficial. Não existe OAuth de login simples confirmado na API brasileira de afiliados; OAuth do MCP de referência é do servidor MCP e exige App ID/Secret Shopee.
+- Build e testes em dispositivo ainda não confirmados para estas alterações. Acompanhar GitHub Actions.
