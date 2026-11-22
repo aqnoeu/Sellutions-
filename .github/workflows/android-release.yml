@@ -1,0 +1,88 @@
+name: Publicar atualização privada do Sellutions
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Tag da versão já existente (ex.: v0.1.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar segredos necessários
+        env:
+          KEYSTORE_B64: ${{ secrets.SELLUTIONS_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.SELLUTIONS_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SELLUTIONS_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SELLUTIONS_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "::error::Configure SELLUTIONS_KEYSTORE_BASE64"; exit 1; }
+          test -n "$KEYSTORE_PASSWORD" || { echo "::error::Configure SELLUTIONS_KEYSTORE_PASSWORD"; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "::error::Configure SELLUTIONS_KEY_ALIAS"; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo "::error::Configure SELLUTIONS_KEY_PASSWORD"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version_tag || github.ref }}
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Preparar versão e assinatura
+        env:
+          KEYSTORE_B64: ${{ secrets.SELLUTIONS_KEYSTORE_BASE64 }}
+          PASS_STORE: ${{ secrets.SELLUTIONS_KEYSTORE_PASSWORD }}
+          PASS_KEY: ${{ secrets.SELLUTIONS_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SELLUTIONS_KEY_ALIAS }}
+          VERSION: ${{ github.event.inputs.version_tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Use uma tag vMAJOR.MINOR.PATCH"; exit 1
+          fi
+          major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch="${BASH_REMATCH[3]}"
+          if ((major > 1000 || minor > 999 || patch > 999)); then echo "::error::Versão fora da faixa"; exit 1; fi
+          code=$((10#$major*1000000 + 10#$minor*1000 + 10#$patch))
+          if ((code <= 1)); then echo "::error::versionCode deve ser superior a 1"; exit 1; fi
+          echo "SELLUTIONS_VERSION_CODE=$code" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_VERSION_NAME=${VERSION#v}" >> "$GITHUB_ENV"
+          echo "VERSION_TAG=$VERSION" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEYSTORE_PATH=$RUNNER_TEMP/sellutions-release.jks" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEYSTORE_PASSWORD=$PASS_STORE" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEY_PASSWORD=$PASS_KEY" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/sellutions-release.jks"
+          chmod 600 "$RUNNER_TEMP/sellutions-release.jks"
+      - name: Validar interface
+        run: node scripts/check-ui.cjs
+      - name: Compilar APK assinado
+        run: gradle --no-daemon :app:assembleRelease
+      - name: Validar assinatura e preparar release
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/release/app-release.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          cp "$APK" sellutions-release.apk
+          sha256sum sellutions-release.apk > sellutions-release.apk.sha256
+          printf "versionCode=%s\n" "$SELLUTIONS_VERSION_CODE" > release-notes.txt
+          printf "\nVersão %s — atualização via Sellutions.\n" "$SELLUTIONS_VERSION_NAME" >> release-notes.txt
+      - name: Criar Release privada
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$VERSION_TAG" sellutions-release.apk sellutions-release.apk.sha256 --repo "$GITHUB_REPOSITORY" --title "Sellutions $SELLUTIONS_VERSION_NAME" --notes-file release-notes.txt --verify-tag
