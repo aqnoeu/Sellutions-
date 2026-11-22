@@ -10,6 +10,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const {URL} = require('node:url');
 const PORT = Number(process.env.PORT || 8787);
+const HOST = process.env.HOST || '127.0.0.1'; // pilot: not remotely accessible by default
 const ORIGIN = process.env.PUBLIC_ORIGIN || '';
 const APP_KEY = process.env.TIKTOK_SHOP_APP_KEY || '';
 const APP_SECRET = process.env.TIKTOK_SHOP_APP_SECRET || '';
@@ -27,7 +28,8 @@ function send(res, code, body) {
   res.end(JSON.stringify(body));
 }
 function configured() {
-  return Boolean(APP_KEY && APP_SECRET && /^https:\/\/[^/]+$/.test(ORIGIN));
+  return Boolean(APP_KEY && APP_SECRET && REQUIRED_SCOPES.length > 0 &&
+    /^https:\/\/[^/]+$/.test(ORIGIN));
 }
 function begin() {
   if(!configured()) throw new Error('not_configured');
@@ -107,5 +109,5 @@ async function handler(req,res) {
     return send(res,404,{error:'not_found'});
   }catch(e){return send(res,500,{error:'internal_error'});}
 }
-if(require.main===module) http.createServer((req,res)=>{handler(req,res);}).listen(PORT,()=>console.log('Sellutions OAuth pilot listening on '+PORT));
+if(require.main===module) http.createServer((req,res)=>{handler(req,res);}).listen(PORT,HOST,()=>console.log('Sellutions OAuth pilot listening on '+HOST+':'+PORT));
 module.exports={handler,begin,configured,exchange,sessions};
