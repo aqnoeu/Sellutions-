@@ -48,3 +48,14 @@
 - **WhatsApp:** conta individual e integração local a validar; o piloto não elimina riscos de bloqueio nem limitações de APIs não oficiais.
 - Em eventual expansão além do piloto, reavaliar backend seguro para a chave geral Groq, controle de uso, autenticação e revogação.
 - **Esta decisão atualiza o planejamento; nenhuma API foi conectada por esta alteração.**
+
+## Implementação baseada no mockup v3 — 22/11/2026
+- **Fonte visual:** arquivo enviado pelo usuário `sellutions_mockup_v3.html`.
+- **Interface Android implementada no código:** `app/src/main/assets/index.html`, baseada nas regras de estilo do mockup, com navegação inferior Início/Produtos/Ofertas/Grupos, tela de Preferências, painel principal, busca por loja e editor de modelos.
+- **Shell Android:** `MainActivity.java` abre a interface HTML local em WebView com DOM storage e sem servidor ou login.
+- **Dados do teste:** removidos os produtos fictícios e grupos predefinidos que constavam no mockup. A pesquisa avisa explicitamente quando uma API ainda não está conectada.
+- **Funcionalidade local no código:** criar, editar, escolher e excluir até 15 modelos de texto; criar e remover referências locais de grupos; persistir preferências via armazenamento do WebView. Esses recursos ainda precisam de teste em dispositivo.
+- **Build:** fluxo GitHub Actions `.github/workflows/android-build.yml` adicionado para produzir APK debug como artifact; o resultado da compilação e teste em aparelho **ainda não foi confirmado**.
+- **Identidade vetorial:** preservado o estilo e cifrão provisório do mockup. A substituição pelo **SVG original do repositório permanece pendente**, porque os caminhos `logo.svg`, `icone.svg`, `assets/logo.svg`, `assets/icon.svg` não foram encontrados nas consultas; não recriar as artes.
+- **Permanecem pendentes:** uso da API real Shopee/TikTok Shop, geração Groq, armazenamento seguro de chaves, WhatsApp, captura flutuante e entrega de APK validado.
+- **Critério para conclusão da Fase 1:** compilação bem-sucedida, instalação e teste de navegação/modelos, e aplicação dos SVGs originais.
