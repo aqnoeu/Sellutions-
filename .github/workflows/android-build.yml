@@ -31,6 +31,19 @@ jobs:
         run: node scripts/check-ui.cjs
       - name: Assemble debug
         run: gradle --no-daemon :app:assembleDebug
+      - name: Smoke test APK release assinado (chave descartável, não publicar)
+        shell: bash
+        run: |
+          set -euo pipefail
+          keytool -genkeypair -noprompt -keystore "$RUNNER_TEMP/smoke.jks" -storepass ci-test-pass -keypass ci-test-pass -alias sellutions-smoke -keyalg RSA -keysize 2048 -validity 2 -dname "CN=Sellutions CI"
+          export SELLUTIONS_VERSION_CODE=1000
+          export SELLUTIONS_VERSION_NAME=0.1.0
+          export SELLUTIONS_KEYSTORE_PATH="$RUNNER_TEMP/smoke.jks"
+          export SELLUTIONS_KEYSTORE_PASSWORD=ci-test-pass
+          export SELLUTIONS_KEY_PASSWORD=ci-test-pass
+          export SELLUTIONS_KEY_ALIAS=sellutions-smoke
+          gradle --no-daemon :app:assembleRelease
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify app/build/outputs/apk/release/app-release.apk
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
