@@ -1,5 +1,7 @@
 name: Android emulator UI tests
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
