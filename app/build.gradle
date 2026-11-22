@@ -8,8 +8,9 @@ android {
         applicationId 'com.aqnoeu.sellutions'
         minSdk 26
         targetSdk 35
-        versionCode 1
-        versionName '0.1.0-dev'
+        // Release builds override these values through CI environment.
+        versionCode (System.getenv('SELLUTIONS_VERSION_CODE') ?: '1').toInteger()
+        versionName System.getenv('SELLUTIONS_VERSION_NAME') ?: '0.1.0-dev'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -17,6 +18,28 @@ android {
         main {
             // Packaged unchanged. The two official SVG files are the brand source of truth.
             assets.srcDirs += ['../assets/brand']
+        }
+    }
+
+    signingConfigs {
+        pilotRelease {
+            // Secrets belong to GitHub Actions; never commit a signing keystore.
+            def path = System.getenv('SELLUTIONS_KEYSTORE_PATH')
+            if (path) {
+                storeFile file(path)
+                storePassword System.getenv('SELLUTIONS_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('SELLUTIONS_KEY_ALIAS')
+                keyPassword System.getenv('SELLUTIONS_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('SELLUTIONS_KEYSTORE_PATH')) {
+                signingConfig signingConfigs.pilotRelease
+            }
         }
     }
 
@@ -44,6 +67,7 @@ tasks.named('preBuild').configure { dependsOn('generateBrandIcon') }
 
 
 dependencies {
+    implementation 'androidx.core:core:1.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
 }
