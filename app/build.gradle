@@ -12,8 +12,31 @@ android {
         versionName '0.1.0-dev'
     }
 
+    sourceSets {
+        main {
+            // Packaged unchanged. The two official SVG files are the brand source of truth.
+            assets.srcDirs += ['../assets/brand']
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 }
+
+// The approved icon SVG contains the exact raster art embedded as a PNG.
+// Extract those original bytes, without reinterpreting or redrawing the artwork.
+tasks.register('generateBrandIcon') {
+    inputs.file(file('../assets/brand/sellutions-icone.svg'))
+    outputs.file(file('src/main/res/drawable-nodpi/sellutions_icon.png'))
+    doLast {
+        def svg = file('../assets/brand/sellutions-icone.svg').getText('UTF-8')
+        def match = svg =~ /data:image\/png;base64,([A-Za-z0-9+\/=]+)/
+        if (!match.find()) throw new GradleException('O SVG oficial não contém PNG incorporado.')
+        def dest = file('src/main/res/drawable-nodpi/sellutions_icon.png')
+        dest.parentFile.mkdirs()
+        dest.bytes = java.util.Base64.getDecoder().decode(match.group(1))
+    }
+}
+tasks.named('preBuild').configure { dependsOn('generateBrandIcon') }
