@@ -31,3 +31,12 @@
 3. Habilitar APIs das duas lojas; adicionar cliente real e busca.
 4. Implementar modelo de Groq no fluxo de edição.
 5. Testar conexão WhatsApp de maneira controlada e identificar capacidades efetivamente disponíveis.
+
+## Decisão de integrações — 22/11/2026
+- **Groq:** uma API **geral, gerenciada pelo Sellutions**, compartilhada entre usuários. Os usuários não precisam fornecer chave Groq. A conexão efetiva depende de configurar uma chave válida e de escolher infraestrutura para protegê-la; **não inserir a chave no APK**, mesmo em aplicativo de uso pessoal, se será distribuído.
+- **Shopee:** cada usuário associa sua **própria conta de afiliado**, com autorização ou credenciais individuais conforme o fluxo permitido pela Shopee; não usar os links de afiliado do desenvolvedor para terceiros.
+- **TikTok Shop:** cada usuário associa sua **própria conta de afiliado**, conforme acesso e escopos concedidos pela plataforma.
+- **WhatsApp:** cada usuário conecta a própria conta, sujeito à viabilidade de integração local Android e às políticas da plataforma.
+- **App de teste:** Android, sem login Sellutions e com prioridade de busca interna.
+- **Ponto em aberto:** o requisito de uma chave Groq geral segura é incompatível com distribuir essa chave embutida em um APK sem backend/proxy confiável; definir arquitetura que a mantenha protegida antes de disponibilizar a terceiros.
+- **Status:** esta é uma decisão de arquitetura, não uma conexão de API já estabelecida.
