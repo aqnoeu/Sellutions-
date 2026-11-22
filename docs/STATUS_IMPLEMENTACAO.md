@@ -40,3 +40,11 @@
 - **App de teste:** Android, sem login Sellutions e com prioridade de busca interna.
 - **Ponto em aberto:** o requisito de uma chave Groq geral segura é incompatível com distribuir essa chave embutida em um APK sem backend/proxy confiável; definir arquitetura que a mantenha protegida antes de disponibilizar a terceiros.
 - **Status:** esta é uma decisão de arquitetura, não uma conexão de API já estabelecida.
+
+## Ajuste do piloto fechado — 22/11/2026
+- Distribuição inicial somente a **1 ou 2 pessoas**, via APK de teste, com repositório GitHub privado; **sem login Sellutions, servidor próprio, Cloudflare Workers ou publicação na Play Store nesta etapa**.
+- **Groq:** mesma credencial geral pode ser usada nas duas instalações, mas deve ser **inserida localmente após instalação**, nunca embutida no APK, no código-fonte, nos logs ou na configuração pública. Guardar com Android Keystore/armazenamento cifrado quando implementado. Assim não há necessidade de proxy neste piloto; reconhecer exposição residual da chave no dispositivo e possibilidade de revogação/limites de uso.
+- **Shopee/TikTok Shop:** credenciais e autorização individuais por instalação, condicionadas a acesso efetivo às APIs.
+- **WhatsApp:** conta individual e integração local a validar; o piloto não elimina riscos de bloqueio nem limitações de APIs não oficiais.
+- Em eventual expansão além do piloto, reavaliar backend seguro para a chave geral Groq, controle de uso, autenticação e revogação.
+- **Esta decisão atualiza o planejamento; nenhuma API foi conectada por esta alteração.**
