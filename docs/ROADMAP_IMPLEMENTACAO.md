@@ -5,6 +5,13 @@
 **Repositório:** privado `aqnoeu/Sellutions-`  
 **Documento complementar:** [Visão e referências](SELLUTIONS_VISAO_E_REFERENCIAS.md)
 
+## Escopo confirmado para a primeira versão de teste
+- O **primeiro acesso a produtos acontece dentro do Sellutions**, por pesquisa/navegação integrada às lojas disponíveis; não depender do botão flutuante para encontrar ofertas no primeiro teste.
+- As prioridades iniciais de API são **Shopee e TikTok Shop**, seguida pela integração **Groq** para criar os textos e pela integração **WhatsApp** para grupos e publicações.
+- O **Modo Busca externo**, que aciona o ícone flutuante e permite prospectar ofertas em outros apps/sites, virá depois, inclusive para lojas sem API ou por escolha do usuário.
+- A primeira versão é um **protótipo funcional incremental**: credenciais, limites de API e capacidade de grupos devem ser validados antes de declarar integração concluída.
+- APIs públicas documentadas não significam necessariamente acesso sem credenciais ou aprovação: conferir requisitos para uso efetivo.
+
 ## Princípios
 - Construir o **aplicativo base antes das automações**.
 - Priorizar **Shopee e TikTok Shop** entre as lojas; posteriormente Amazon, Mercado Livre e SHEIN. **Temu não integra o lançamento inicial**.
@@ -45,7 +52,8 @@
 - **Shopee:** avaliar o repositório de referência de afiliados, acesso autorizado a catálogo, informação comercial e criação/uso de links de afiliados.
 - **TikTok Shop:** examinar API e requisitos efetivos de acesso e autorização da conta; importar metadados e links permitidos.
 - Montar conectores separados, com estados **conectado, precisa de autorização, indisponível e erro**.
-- Buscar/importar produto por URL e permitir edição/revisão dos campos quando a API não trouxer dados suficientes.
+- **Priorizar busca e seleção de produtos dentro do próprio Sellutions**, com catálogo/resultados das APIs acessíveis, cards e abertura da oferta; permitir importar URL como capacidade auxiliar futura.
+- Permitir edição/revisão dos campos quando a API não trouxer dados suficientes.
 - Conservar a origem e evitar dados fabricados, especialmente preços e promoções.
 **Critério:** importar pelo menos um produto real e autorizado de cada loja disponível, com URL correta e dados verificáveis. Bloqueios de acesso devem ser registrados, não mascarados por mock.
 
@@ -69,8 +77,8 @@
 - Exigir autorização do usuário e considerar regras anti-spam, privacidade, consentimento e risco de bloqueio.
 **Critério:** texto e link chegam a um destino de teste pelo mecanismo permitido, e o app distingue sucesso confirmado, ação externa pendente e erro. Criação/administração de grupos só são marcadas como concluídas se testadas de ponta a ponta.
 
-## Fase 6 — Captura facilitada e compartilhamento do Android
-**Objetivo:** capturar o produto enquanto se navega em outros apps.
+## Fase 6 — Modo Busca externo, captura facilitada e compartilhamento do Android
+**Objetivo:** ativar posteriormente um **Modo Busca** que exibe ícone flutuante e permite prospectar ofertas em outros aplicativos/sites, inclusive os que não oferecem API, ou quando o usuário preferir essa busca.
 - Receber links pelo menu **Compartilhar** do Android.
 - Aceitar screenshot/imagem com confirmação do usuário e extrair informações verificáveis.
 - Avaliar **botão flutuante** com permissão de sobreposição expressa, desligamento simples e interface discreta.
@@ -113,7 +121,7 @@
 
 ## Marco inicial prioritário — MVP
 
-O primeiro MVP utilizável corresponde às **Fases 0 a 5**, com: aplicativo base personalizado pelos SVGs oficiais, importação autorizada por **Shopee e TikTok Shop**, composição por **Groq**, e publicação/compartilhamento para **WhatsApp** mediante a solução comprovadamente suportada. A gestão avançada de grupos não deve bloquear o MVP se a plataforma não permitir a API necessária; registrar a dependência.
+O primeiro MVP utilizável corresponde às **Fases 0 a 5**, com: aplicativo base personalizado pelos SVGs oficiais, **busca interna e seleção de produtos** de **Shopee e TikTok Shop**, composição por **Groq**, e publicação/compartilhamento para **WhatsApp** mediante a solução comprovadamente suportada. A gestão avançada de grupos não deve bloquear o MVP se a plataforma não permitir a API necessária; registrar a dependência.
 
 ## Referências por área
 
