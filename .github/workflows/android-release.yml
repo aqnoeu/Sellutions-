@@ -133,6 +133,33 @@ jobs:
             exit 1
           }
           echo "Atualização verificada: $old_version → $SELLUTIONS_VERSION_CODE"
+      - name: Habilitar aceleração do emulador Android
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Testar instalação e atualização no emulador Android 35
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            package=com.aqnoeu.sellutions
+            previous="$RUNNER_TEMP/previous-apk/sellutions-release.apk"
+            if [ -f "$previous" ]; then
+              echo "Instalando APK anterior para testar atualização sem perda do pacote..."
+              adb install -r "$previous"
+            fi
+            echo "Instalando APK assinado da nova versão..."
+            adb install -r sellutions-release.apk
+            echo "Validando versionCode instalado..."
+            adb shell dumpsys package "$package" | grep -E "versionCode=${SELLUTIONS_VERSION_CODE}([[:space:]]|$)"
+            echo "Abrindo o Sellutions..."
+            adb shell am start -W -n "$package/.MainActivity"
+            sleep 5
+            adb shell pidof "$package" | grep -Eq '[0-9]+'
+            echo "Teste aprovado: APK instalado/atualizado, versão conferida e aplicativo iniciado."
       - name: Publicar apenas APK na Release
         env:
           GH_TOKEN: ${{ github.token }}
