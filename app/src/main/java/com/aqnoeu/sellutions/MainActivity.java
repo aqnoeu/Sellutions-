@@ -2,6 +2,7 @@ package com.aqnoeu.sellutions;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Build;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -10,6 +11,7 @@ import android.webkit.WebResourceRequest;
 import android.content.Intent;
 import android.net.Uri;
 import android.graphics.Color;
+import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
 import org.json.JSONObject;
 
@@ -24,7 +26,19 @@ public final class MainActivity extends Activity {
         getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 | android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         web = new WebView(this);
-        web.setBackgroundColor(Color.rgb(255, 248, 240));
+        // Android 15+ draws apps behind system bars. Pad the WebView's content
+        // by the actual status/nav/cutout insets instead of hardcoded pixels.
+        if (Build.VERSION.SDK_INT >= 35) {
+            web.setOnApplyWindowInsetsListener((view, insets) -> {
+                android.graphics.Insets safe = insets.getInsets(
+                    WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                if (view.getPaddingTop() != safe.top || view.getPaddingBottom() != safe.bottom) {
+                    view.setPadding(safe.left, safe.top, safe.right, safe.bottom);
+                }
+                return insets;
+            });
+        }
+        web.setBackgroundColor(Color.WHITE);
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
