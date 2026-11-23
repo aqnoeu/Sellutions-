@@ -25,6 +25,17 @@ body{background:#fff8f0;min-height:100dvh}
 textarea.field{min-height:150px;resize:vertical}
 .primary,button{touch-action:manipulation}
 @media(max-width:470px){.device{min-height:100dvh;border:0;border-radius:0}.screen{max-height:none;min-height:0}}
+/* Android 15/16 edge-to-edge: viewport is already constrained by native system-bar insets. */
+html,body{height:100%;min-height:0;overflow:hidden;background:#fff}
+.wrap{height:100%;min-height:0}
+.device{height:100dvh;min-height:0;max-height:100dvh;overflow:hidden}
+.apphead{flex:0 0 auto}
+.screen{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.bottom{height:76px;min-height:76px;max-height:76px;flex:0 0 76px;padding:7px 9px 11px;background:#fff;border-top:1px solid #f1e7df;position:relative;z-index:2}
+.bottom .nav{display:flex;flex:1 1 0;min-width:0;height:100%;padding:4px 1px 2px;gap:3px;align-items:center;justify-content:center;color:#756a63;line-height:1.1;font-size:12px;font-weight:700}
+.bottom .nav.active{color:#e66300}
+.bottom .nav .ico{display:block;line-height:1;font-size:24px}
+
 </style></head><body>
 <div class="wrap"><main class="device">
 <header class="apphead"><div class="appbrand"><img class="brand-svg" src="sellutions-icone.svg" alt="Ícone oficial Sellutions"><div><strong>Sellutions</strong><small id="subtitle">Encontrar e anunciar</small></div></div><button class="round" onclick="openTab('settings')" aria-label="Preferências">⚙</button></header>
@@ -51,8 +62,8 @@ textarea.field{min-height:150px;resize:vertical}
 <p class="desc" id="appVersion">Versão instalada: consultando...</p>
 <div class="notice" id="updateStatus" role="status" aria-live="polite">Toque em Verificar atualizações para consultar uma versão mais recente.</div>
 <button class="primary full" onclick="checkSellutionsUpdate()">↻ Verificar atualizações</button>
-<button class="ghost full" style="margin-top:9px" onclick="authorizeSellutionsUpdates()">🔒 Autorizar acesso às atualizações</button>
-<p class="desc" style="margin-top:10px">Como o repositório é privado, o acesso é configurado uma vez por aparelho. A instalação continua exigindo sua confirmação no Android.</p>
+
+<p class="desc" style="margin-top:10px">O acesso ao GitHub privado será solicitado somente na primeira verificação. A instalação de cada atualização exige sua confirmação no Android.</p>
 <div class="sectionhead"><h2>Conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>TikTok Shop:</b> autorização API pendente<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
 </div>
 <nav class="bottom"><button class="nav active" data-tab="home" onclick="openTab('home')"><span class="ico">⌂</span>Início</button><button class="nav" data-tab="catalog" onclick="openTab('catalog')"><span class="ico">▦</span>Produtos</button><button class="nav" data-tab="queue" onclick="openTab('queue')"><span class="ico">▤</span>Ofertas</button><button class="nav" data-tab="groups" onclick="openTab('groups')"><span class="ico">♧</span>Grupos</button></nav>
@@ -131,10 +142,6 @@ function sellutionsUpdateStatus(message){const el=$('updateStatus');if(el)el.tex
 function checkSellutionsUpdate(){
  if(window.AndroidUpdates&&typeof window.AndroidUpdates.check==='function')window.AndroidUpdates.check();
  else sellutionsUpdateStatus('Verificação disponível somente no aplicativo Android instalado.');
-}
-function authorizeSellutionsUpdates(){
- if(window.AndroidUpdates&&typeof window.AndroidUpdates.authorize==='function')window.AndroidUpdates.authorize();
- else sellutionsUpdateStatus('Configuração disponível somente no aplicativo Android instalado.');
 }
 function templateHTML(){
 return '<div class="sheethead"><h2 id="modalTitle">Meus modelos de mensagem</h2><button class="close" onclick="closeSheet()">×</button></div>'+
