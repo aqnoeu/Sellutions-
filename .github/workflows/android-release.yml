@@ -73,17 +73,128 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          previous=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName --jq '.[].tagName' | grep -E '^v0\.1\.[0-9]+$' | sed 's/^v0\.1\.//' | sort -n | tail -1 || true)
+          tags=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName --jq '.[].tagName')
+          previous=$(printf '%s\n' "$tags" | grep -E '^v0\.2\.[0-9]+
+      - name: Validar interface e compilar APK assinado
+        run: |
+          node scripts/check-ui.cjs
+          gradle --no-daemon :app:assembleRelease
+      - name: Validar assinatura e calcular SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$apk"
+          cp "$apk" sellutions-release.apk
+          sha256sum sellutions-release.apk > sellutions-release.apk.sha256
+          printf 'versionCode=%s\n\nVersão %s, assinatura verificada e hash SHA-256.\n' "$SELLUTIONS_VERSION_CODE" "$SELLUTIONS_VERSION_NAME" > release-notes.txt
+      - name: Conferir certificado e progressão da atualização
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${PREVIOUS_TAG:-}" ]]; then
+            echo "Primeira versão: nenhum APK anterior para comparar."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/previous-apk"
+          gh release download "$PREVIOUS_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'sellutions-release.apk' --dir "$RUNNER_TEMP/previous-apk"
+          OLD="$RUNNER_TEMP/previous-apk/sellutions-release.apk"
+          NEW="sellutions-release.apk"
+          test -s "$OLD"
+          signer() {
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$1" \
+              | grep 'Signer #1 certificate SHA-256 digest:' | head -1 | awk '{print $NF}'
+          }
+          old_signer=$(signer "$OLD")
+          new_signer=$(signer "$NEW")
+          test -n "$old_signer" && test "$old_signer" = "$new_signer" || {
+            echo "::error::Assinatura Android diferente! Instalação sobre a versão anterior seria recusada."
+            exit 1
+          }
+          echo "Certificado idêntico ao APK anterior: $PREVIOUS_TAG"
+          old_version=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$OLD" | sed -n "s/.*versionCode='\\([0-9]*\\)'.*/\\1/p" | head -1)
+          test -n "$old_version" && test "$SELLUTIONS_VERSION_CODE" -gt "$old_version" || {
+            echo "::error::versionCode não é crescente"
+            exit 1
+          }
+          echo "Atualização verificada: $old_version → $SELLUTIONS_VERSION_CODE"
+      - name: Publicar APK e hash na Release privada
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$VERSION_TAG" sellutions-release.apk sellutions-release.apk.sha256 \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Sellutions $SELLUTIONS_VERSION_NAME" --notes-file release-notes.txt
+ | sed 's/^v0\.2\.//' | sort -n | tail -1 || true)
           if [[ -z "$previous" ]]; then
             patch=0
+            last_old=$(printf '%s\n' "$tags" | grep -E '^v0\.1\.[0-9]+
+      - name: Validar interface e compilar APK assinado
+        run: |
+          node scripts/check-ui.cjs
+          gradle --no-daemon :app:assembleRelease
+      - name: Validar assinatura e calcular SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$apk"
+          cp "$apk" sellutions-release.apk
+          sha256sum sellutions-release.apk > sellutions-release.apk.sha256
+          printf 'versionCode=%s\n\nVersão %s, assinatura verificada e hash SHA-256.\n' "$SELLUTIONS_VERSION_CODE" "$SELLUTIONS_VERSION_NAME" > release-notes.txt
+      - name: Conferir certificado e progressão da atualização
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${PREVIOUS_TAG:-}" ]]; then
+            echo "Primeira versão: nenhum APK anterior para comparar."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/previous-apk"
+          gh release download "$PREVIOUS_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern 'sellutions-release.apk' --dir "$RUNNER_TEMP/previous-apk"
+          OLD="$RUNNER_TEMP/previous-apk/sellutions-release.apk"
+          NEW="sellutions-release.apk"
+          test -s "$OLD"
+          signer() {
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$1" \
+              | grep 'Signer #1 certificate SHA-256 digest:' | head -1 | awk '{print $NF}'
+          }
+          old_signer=$(signer "$OLD")
+          new_signer=$(signer "$NEW")
+          test -n "$old_signer" && test "$old_signer" = "$new_signer" || {
+            echo "::error::Assinatura Android diferente! Instalação sobre a versão anterior seria recusada."
+            exit 1
+          }
+          echo "Certificado idêntico ao APK anterior: $PREVIOUS_TAG"
+          old_version=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$OLD" | sed -n "s/.*versionCode='\\([0-9]*\\)'.*/\\1/p" | head -1)
+          test -n "$old_version" && test "$SELLUTIONS_VERSION_CODE" -gt "$old_version" || {
+            echo "::error::versionCode não é crescente"
+            exit 1
+          }
+          echo "Atualização verificada: $old_version → $SELLUTIONS_VERSION_CODE"
+      - name: Publicar APK e hash na Release privada
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$VERSION_TAG" sellutions-release.apk sellutions-release.apk.sha256 \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Sellutions $SELLUTIONS_VERSION_NAME" --notes-file release-notes.txt
+ | sed 's/^v0\.1\.//' | sort -n | tail -1 || true)
+            if [[ -n "$last_old" ]]; then echo "PREVIOUS_TAG=v0.1.$last_old" >> "$GITHUB_ENV"; fi
           else
             patch=$((previous+1))
-            echo "PREVIOUS_TAG=v0.1.$previous" >> "$GITHUB_ENV"
+            echo "PREVIOUS_TAG=v0.2.$previous" >> "$GITHUB_ENV"
           fi
           test "$patch" -lt 1000
-          echo "SELLUTIONS_VERSION_CODE=$((1000+patch))" >> "$GITHUB_ENV"
-          echo "SELLUTIONS_VERSION_NAME=0.1.$patch" >> "$GITHUB_ENV"
-          echo "VERSION_TAG=v0.1.$patch" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_VERSION_CODE=$((2000+patch))" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_VERSION_NAME=0.2.$patch-dev" >> "$GITHUB_ENV"
+          echo "VERSION_TAG=v0.2.$patch" >> "$GITHUB_ENV"
       - name: Validar interface e compilar APK assinado
         run: |
           node scripts/check-ui.cjs
