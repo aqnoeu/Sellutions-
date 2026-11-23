@@ -38,3 +38,17 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
           disable-animations: true
           script: gradle --no-daemon :app:connectedDebugAndroidTest
+
+      - name: Mostrar detalhes das falhas no console
+        if: failure()
+        run: |
+          find app/build/outputs/androidTest-results -type f -name '*.xml' -exec cat {} \; || true
+      - name: Arquivar resultados de testes e diagnósticos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sellutions-android-test-results
+          path: |
+            app/build/outputs/androidTest-results/
+            app/build/reports/androidTests/
+          if-no-files-found: ignore
