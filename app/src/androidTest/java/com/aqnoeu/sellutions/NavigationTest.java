@@ -43,9 +43,12 @@ public class NavigationTest {
             assertEquals("true", ready);
             assertEquals("true", js(scenario, "(openTab('catalog'), document.getElementById('tab-catalog').classList.contains('active'))"));
             assertEquals("true", js(scenario, "(openTab('queue'), document.getElementById('tab-queue').classList.contains('active'))"));
+            assertEquals("true", js(scenario, "(()=>{const nav=document.querySelector('.bottom'); const r=nav.getBoundingClientRect(); return r.height>=65&&r.bottom<=window.innerHeight+2&&r.top>=0})()"));
             assertEquals("true", js(scenario, "(openTab('groups'), document.getElementById('tab-groups').classList.contains('active'))"));
             assertEquals("true", js(scenario, "(openTab('settings'), document.getElementById('tab-settings').classList.contains('active'))"));
             assertEquals("true", js(scenario, "!!document.getElementById('updateStatus') && !!window.AndroidUpdates"));
+            assertEquals("true", js(scenario, "typeof window.AndroidUpdates.check==='function'"));
+            assertEquals("true", js(scenario, "!Array.from(document.querySelectorAll('#tab-settings button')).some(b=>b.textContent.includes('Autorizar acesso'))"));
             assertEquals("true", js(scenario, "document.getElementById('appVersion').textContent.includes('0.1.0')"));
             assertEquals("\"Teste de atualização\"", js(scenario, "(sellutionsUpdateStatus('Teste de atualização'), document.getElementById('updateStatus').textContent)"));
             assertEquals("true", js(scenario, "(openTemplateEditor(), !!document.getElementById('templateName'))"));
