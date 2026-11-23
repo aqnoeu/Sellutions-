@@ -73,17 +73,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          previous=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName --jq '.[].tagName' | grep -E '^v0\.1\.[0-9]+$' | sed 's/^v0\.1\.//' | sort -n | tail -1 || true)
+          tags=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName --jq '.[].tagName')
+          previous=$(printf '%s\n' "$tags" | grep -E '^v0\.2\.[0-9]+$' | sed 's/^v0\.2\.//' | sort -n | tail -1 || true)
           if [[ -z "$previous" ]]; then
             patch=0
+            last_old=$(printf '%s\n' "$tags" | grep -E '^v0\.1\.[0-9]+$' | sed 's/^v0\.1\.//' | sort -n | tail -1 || true)
+            if [[ -n "$last_old" ]]; then echo "PREVIOUS_TAG=v0.1.$last_old" >> "$GITHUB_ENV"; fi
           else
             patch=$((previous+1))
-            echo "PREVIOUS_TAG=v0.1.$previous" >> "$GITHUB_ENV"
+            echo "PREVIOUS_TAG=v0.2.$previous" >> "$GITHUB_ENV"
           fi
           test "$patch" -lt 1000
-          echo "SELLUTIONS_VERSION_CODE=$((1000+patch))" >> "$GITHUB_ENV"
-          echo "SELLUTIONS_VERSION_NAME=0.1.$patch" >> "$GITHUB_ENV"
-          echo "VERSION_TAG=v0.1.$patch" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_VERSION_CODE=$((2000+patch))" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_VERSION_NAME=0.2.$patch-dev" >> "$GITHUB_ENV"
+          echo "VERSION_TAG=v0.2.$patch" >> "$GITHUB_ENV"
       - name: Validar interface e compilar APK assinado
         run: |
           node scripts/check-ui.cjs
