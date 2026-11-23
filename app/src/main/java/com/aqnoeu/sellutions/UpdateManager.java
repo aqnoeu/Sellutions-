@@ -76,12 +76,16 @@ public final class UpdateManager {
             wrapper.addView(input, lp);
             new AlertDialog.Builder(activity)
                 .setTitle("Autorizar atualizações")
-                .setMessage("Use um token de acesso somente leitura ao repositório privado. Ele será cifrado neste aparelho. Não cole sua senha do GitHub.")
+                .setMessage("O Sellutions precisa de acesso de leitura ao repositório privado para consultar e baixar atualizações. Cole um token fine-grained da sua conta GitHub com permissão Contents: read somente para aqnoeu/Sellutions-. A configuração é feita uma única vez.")
                 .setView(wrapper)
                 .setPositiveButton("Salvar acesso", (d,w) -> {
                     String token = input.getText().toString().trim();
                     if (token.isEmpty()) { status("Informe um token para acessar as versões privadas."); return; }
-                    try { saveToken(token); status("Acesso salvo neste aparelho. Toque em Verificar atualizações."); }
+                    try {
+                        saveToken(token);
+                        status("Acesso salvo. Verificando atualizações...");
+                        check();
+                    }
                     catch (Exception e) { status("Não foi possível proteger o token no dispositivo."); }
                 })
                 .setNeutralButton("Remover acesso", (d,w) -> {
@@ -98,7 +102,8 @@ public final class UpdateManager {
             try {
                 String token = readToken();
                 if (token == null || token.isEmpty()) {
-                    status("Configure o acesso às versões privadas antes de verificar.");
+                    status("Primeiro acesso: autorize a consulta às versões privadas.");
+                    showCredentialsDialog();
                     return;
                 }
                 JSONObject release = requestJson(API_URL, token);
