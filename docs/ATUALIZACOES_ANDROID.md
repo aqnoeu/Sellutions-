@@ -45,3 +45,15 @@ Para aumentar a segurança no futuro, mover **exatamente a mesma chave** e sua s
 
 ## Limites
 A instalação da Release privada inicial exige login GitHub no navegador. O atualizador do APK exige autorização de leitura da Release privada uma vez no dispositivo. A confirmação de instalação é exigência do Android.
+
+
+## Teste de atualização efetivamente executado
+Em 23/11/2026, o workflow [45087589108](https://github.com/aqnoeu/Sellutions-/actions/runs/45087589108) terminou **com sucesso** em um emulador Android API 35:
+1. APK `v0.1.0` instalado: `adb install` retornou `Success`;
+2. APK `v0.1.1` instalado **por cima**, sem desinstalação: `adb install -r` retornou `Success`;
+3. `PackageManager` confirmou `versionCode=1001`;
+4. Certificado e SHA-256 foram verificados durante a publicação assinada.
+
+Esse teste verifica a continuidade da instalação Android entre duas Releases reais. **Não substitui** o teste de autorização pessoal e download privado dentro do aplicativo em um celular físico, que exige um token de leitura configurado pelo usuário.
+
+APK da versão assinada atual: https://github.com/aqnoeu/Sellutions-/releases/download/v0.1.1/sellutions-release.apk
