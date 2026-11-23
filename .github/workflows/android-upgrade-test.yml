@@ -1,0 +1,40 @@
+name: Sellutions — teste real de atualização entre APKs
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/android-upgrade-test.yml'
+      - 'scripts/test-android-upgrade.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar as duas versões assinadas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sellutions/v0.1.0 /tmp/sellutions/v0.1.1
+          gh release download v0.1.0 --repo "$GITHUB_REPOSITORY" --dir /tmp/sellutions/v0.1.0 --pattern 'sellutions-release.apk*'
+          gh release download v0.1.1 --repo "$GITHUB_REPOSITORY" --dir /tmp/sellutions/v0.1.1 --pattern 'sellutions-release.apk*'
+          for version in v0.1.0 v0.1.1; do
+            (cd "/tmp/sellutions/$version" && sha256sum -c sellutions-release.apk.sha256)
+          done
+      - name: Instalar e atualizar sem desinstalar no emulador Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: bash scripts/test-android-upgrade.sh
