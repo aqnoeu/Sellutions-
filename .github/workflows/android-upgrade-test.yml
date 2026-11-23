@@ -26,10 +26,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/sellutions/v0.1.0 /tmp/sellutions/v0.1.1
-          gh release download v0.1.0 --repo "$GITHUB_REPOSITORY" --dir /tmp/sellutions/v0.1.0 --pattern 'sellutions-release.apk*'
-          gh release download v0.1.1 --repo "$GITHUB_REPOSITORY" --dir /tmp/sellutions/v0.1.1 --pattern 'sellutions-release.apk*'
-          for version in v0.1.0 v0.1.1; do
+          mkdir -p /tmp/sellutions/v0.1.3 /tmp/sellutions/v0.2.0
+          gh release download v0.1.3 --repo "$GITHUB_REPOSITORY" --dir /tmp/sellutions/v0.1.3 --pattern 'sellutions-release.apk*'
+          gh release download v0.2.0 --repo "$GITHUB_REPOSITORY" --dir /tmp/sellutions/v0.2.0 --pattern 'sellutions-release.apk*'
+          for version in v0.1.3 v0.2.0; do
             (cd "/tmp/sellutions/$version" && sha256sum -c sellutions-release.apk.sha256)
           done
       - name: Habilitar aceleração KVM para o emulador
