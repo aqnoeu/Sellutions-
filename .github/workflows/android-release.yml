@@ -133,10 +133,10 @@ jobs:
             exit 1
           }
           echo "Atualização verificada: $old_version → $SELLUTIONS_VERSION_CODE"
-      - name: Publicar APK e hash na Release privada
+      - name: Publicar apenas APK na Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$VERSION_TAG" sellutions-release.apk sellutions-release.apk.sha256 \
+          gh release create "$VERSION_TAG" sellutions-release.apk \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "Sellutions $SELLUTIONS_VERSION_NAME" --notes-file release-notes.txt
