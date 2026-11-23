@@ -57,3 +57,12 @@ Em 23/11/2026, o workflow [45087589108](https://github.com/aqnoeu/Sellutions-/ac
 Esse teste verifica a continuidade da instalação Android entre duas Releases reais. **Não substitui** o teste de autorização pessoal e download privado dentro do aplicativo em um celular físico, que exige um token de leitura configurado pelo usuário.
 
 APK da versão assinada atual: https://github.com/aqnoeu/Sellutions-/releases/download/v0.1.1/sellutions-release.apk
+
+
+## Release 0.2.0-dev — distribuição assinada
+- O código experimental da branch `release/v0.2.0-affiliate-connectors` foi incorporado à `main` pelo PR #1 (merge `0d3369af`).
+- A Release privada [v0.2.0](https://github.com/aqnoeu/Sellutions-/releases/tag/v0.2.0) contém `sellutions-release.apk` e `sellutions-release.apk.sha256`, gerados no workflow [45089731199](https://github.com/aqnoeu/Sellutions-/actions/runs/45089731199) concluído com sucesso.
+- Nome instalado `0.2.0-dev`, `versionCode=2000`; a publicação exigiu certificado idêntico à série 0.1.x, versão maior e SHA-256.
+- Download inicial: https://github.com/aqnoeu/Sellutions-/releases/download/v0.2.0/sellutions-release.apk
+- No aplicativo, **Verificar atualizações** abre a autorização de leitura GitHub se ainda necessária e volta à consulta automaticamente após salvar o acesso. A instalação ocorre pelo instalador oficial do Android.
+- O conector TikTok Shop é experimental e requer autorização real de plataforma e serviço HTTPS; ele **não está conectado** por padrão.
