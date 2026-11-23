@@ -20,33 +20,57 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Exigir certificado seguro
-        env:
-          KEYSTORE_B64: ${{ secrets.SELLUTIONS_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.SELLUTIONS_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.SELLUTIONS_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.SELLUTIONS_KEY_PASSWORD }}
-        run: |
-          set -euo pipefail
-          test -n "$KEYSTORE_B64" || { echo "::error::Falta secret SELLUTIONS_KEYSTORE_BASE64"; exit 1; }
-          test -n "$KEYSTORE_PASSWORD" || { echo "::error::Falta secret SELLUTIONS_KEYSTORE_PASSWORD"; exit 1; }
-          test -n "$KEY_ALIAS" || { echo "::error::Falta secret SELLUTIONS_KEY_ALIAS"; exit 1; }
-          test -n "$KEY_PASSWORD" || { echo "::error::Falta secret SELLUTIONS_KEY_PASSWORD"; exit 1; }
       - uses: actions/checkout@v4
-      - name: Instalar Java 17
+      - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Instalar SDK 35
+      - name: Configurar SDK 35
         run: |
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Calcular versão contínua a partir das Releases
+      - name: Recuperar ou criar assinatura persistente privada
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/sellutions-signing"
+          cd "$RUNNER_TEMP/sellutions-signing"
+          if gh release view signing-vault --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download signing-vault --repo "$GITHUB_REPOSITORY" --pattern 'android-signing.jks' --pattern 'android-signing.pass' --clobber
+          else
+            password=$(openssl rand -hex 24)
+            keytool -genkeypair -noprompt \
+              -keystore android-signing.jks -storetype PKCS12 \
+              -storepass "$password" -keypass "$password" \
+              -alias sellutions -keyalg RSA -keysize 3072 -validity 10000 \
+              -dname "CN=Sellutions Android Pilot,O=Sellutions"
+            printf '%s' "$password" > android-signing.pass
+            gh release create signing-vault \
+              android-signing.jks android-signing.pass \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "BACKUP PRIVADO: assinatura do piloto Android" \
+              --notes "Release de rascunho com a chave de assinatura permanente. Nunca publicar nem excluir. Restringir acesso ao repositório." \
+              --draft
+          fi
+          test -s android-signing.jks
+          test -s android-signing.pass
+          password=$(cat android-signing.pass)
+          echo "::add-mask::$password"
+          keytool -list -keystore android-signing.jks -storepass "$password" -alias sellutions >/dev/null
+          echo "SELLUTIONS_KEYSTORE_PATH=$PWD/android-signing.jks" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEYSTORE_PASSWORD=$password" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEY_PASSWORD=$password" >> "$GITHUB_ENV"
+          echo "SELLUTIONS_KEY_ALIAS=sellutions" >> "$GITHUB_ENV"
+      - name: Calcular versão crescente
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           set -euo pipefail
           previous=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName --jq '.[].tagName' | grep -E '^v0\.1\.[0-9]+$' | sed 's/^v0\.1\.//' | sort -n | tail -1 || true)
@@ -55,25 +79,12 @@ jobs:
           echo "SELLUTIONS_VERSION_CODE=$((1000+patch))" >> "$GITHUB_ENV"
           echo "SELLUTIONS_VERSION_NAME=0.1.$patch" >> "$GITHUB_ENV"
           echo "VERSION_TAG=v0.1.$patch" >> "$GITHUB_ENV"
-      - name: Restaurar chave permanente sem divulgá-la
-        env:
-          KEYSTORE_B64: ${{ secrets.SELLUTIONS_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.SELLUTIONS_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.SELLUTIONS_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.SELLUTIONS_KEY_PASSWORD }}
-        run: |
-          set -euo pipefail
-          umask 077
-          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/sellutions-release.jks"
-          echo "SELLUTIONS_KEYSTORE_PATH=$RUNNER_TEMP/sellutions-release.jks" >> "$GITHUB_ENV"
-          echo "SELLUTIONS_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
-          echo "SELLUTIONS_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
-          echo "SELLUTIONS_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
-      - name: Verificar interface e compilar
+      - name: Validar interface e compilar APK assinado
         run: |
           node scripts/check-ui.cjs
           gradle --no-daemon :app:assembleRelease
-      - name: Validar assinatura e produzir SHA-256
+      - name: Validar assinatura e calcular SHA-256
+        shell: bash
         run: |
           set -euo pipefail
           apk=app/build/outputs/apk/release/app-release.apk
@@ -81,7 +92,7 @@ jobs:
           cp "$apk" sellutions-release.apk
           sha256sum sellutions-release.apk > sellutions-release.apk.sha256
           printf 'versionCode=%s\n\nVersão %s, assinatura verificada e hash SHA-256.\n' "$SELLUTIONS_VERSION_CODE" "$SELLUTIONS_VERSION_NAME" > release-notes.txt
-      - name: Publicar APK na Release privada
+      - name: Publicar APK e hash na Release privada
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
