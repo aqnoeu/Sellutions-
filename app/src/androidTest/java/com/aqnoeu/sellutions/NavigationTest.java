@@ -17,7 +17,9 @@ public class NavigationTest {
         AtomicReference<String> value = new AtomicReference<>("null");
         scenario.onActivity(activity -> {
             android.view.ViewGroup root = activity.findViewById(android.R.id.content);
-            android.view.View content = root.getChildAt(0);
+            android.view.View container = root.getChildAt(0);
+            android.view.View content = container instanceof android.view.ViewGroup
+                ? ((android.view.ViewGroup)container).getChildAt(0) : container;
             if (content instanceof WebView) {
                 ((WebView) content).evaluateJavascript(expression, result -> {
                     value.set(result);
@@ -49,11 +51,34 @@ public class NavigationTest {
             assertEquals("true", js(scenario, "!!document.getElementById('updateStatus') && !!window.AndroidUpdates"));
             assertEquals("true", js(scenario, "typeof window.AndroidUpdates.check==='function'"));
             assertEquals("true", js(scenario, "!Array.from(document.querySelectorAll('#tab-settings button')).some(b=>b.textContent.includes('Autorizar acesso'))"));
-            assertEquals("true", js(scenario, "document.getElementById('appVersion').textContent.includes('0.1.0')"));
+            assertEquals("true", js(scenario, "document.getElementById('appVersion').textContent.startsWith('Versão instalada:')"));
             assertEquals("\"Teste de atualização\"", js(scenario, "(sellutionsUpdateStatus('Teste de atualização'), document.getElementById('updateStatus').textContent)"));
             assertEquals("true", js(scenario, "(openTemplateEditor(), !!document.getElementById('templateName'))"));
             assertEquals("true", js(scenario, "document.querySelector('.overlay').classList.contains('open')"));
             assertEquals("true", js(scenario, "(closeSheet(), !document.querySelector('.overlay').classList.contains('open'))"));
+        }
+    }
+
+    @Test public void androidBarsDoNotCoverWebView() throws Exception {
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity -> {
+                android.view.ViewGroup content = activity.findViewById(android.R.id.content);
+                android.view.View root = content.getChildAt(0);
+                android.view.View web = ((android.view.ViewGroup) root).getChildAt(0);
+                android.view.WindowInsets insets = root.getRootWindowInsets();
+                if (android.os.Build.VERSION.SDK_INT >= 35 && insets != null) {
+                    android.graphics.Insets bars = insets.getInsets(
+                        android.view.WindowInsets.Type.statusBars()
+                        | android.view.WindowInsets.Type.navigationBars()
+                        | android.view.WindowInsets.Type.displayCutout());
+                    android.widget.FrameLayout.LayoutParams lp =
+                        (android.widget.FrameLayout.LayoutParams) web.getLayoutParams();
+                    assertTrue("Top bar must be reserved", lp.topMargin >= bars.top);
+                    assertTrue("Bottom navigation bar must be reserved", lp.bottomMargin >= bars.bottom);
+                    assertTrue("WebView must have positive visible height", web.getHeight() > 0);
+                }
+            });
+            assertEquals("true", js(scenario, "(()=>{const h=document.querySelector('.apphead').getBoundingClientRect();const b=document.querySelector('.bottom').getBoundingClientRect();return h.top>=0 && b.bottom<=innerHeight+2 && b.top>h.bottom && b.height>=65})()"));
         }
     }
 
