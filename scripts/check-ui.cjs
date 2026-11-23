@@ -17,5 +17,13 @@ for (const asset of ['sellutions-cifrao.svg','sellutions-icone.svg']) {
   assert.ok(html.includes(asset), 'Marca oficial não utilizada: '+asset);
   assert.ok(fs.existsSync('assets/brand/'+asset), 'SVG oficial ausente: '+asset);
 }
+const nav = html.match(/<nav class="bottom"[\s\S]*?<\/nav>/)?.[0];
+assert.ok(nav, 'Barra de navegação não encontrada');
+assert.equal((nav.match(/class="nav-icon"/g) || []).length, 4, 'A barra deve ter quatro SVGs vetoriais');
+for (const tab of ['home', 'catalog', 'queue', 'groups']) {
+  assert.ok(nav.includes('data-tab="'+tab+'"'), 'Aba não encontrada: '+tab);
+}
+assert.ok(nav.includes('aria-current="page"'), 'Aba ativa deve ser acessível');
+assert.ok(!/[⌂▦▤♧]/.test(nav), 'Símbolos antigos devem ser removidos');
 assert.ok(!html.includes('products=[{'), 'Produtos fictícios não devem entrar na versão Android');
 console.log('Verificação estática OK: JavaScript válido, telas e marcas presentes.');
