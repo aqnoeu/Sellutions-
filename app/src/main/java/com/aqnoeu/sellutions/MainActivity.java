@@ -19,6 +19,7 @@ public final class MainActivity extends Activity {
     private WebView web;
     private boolean pageReady = false;
     private UpdateManager updates;
+    private AffiliateConnector affiliateConnector;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(Color.rgb(255, 248, 240));
@@ -58,6 +59,8 @@ public final class MainActivity extends Activity {
             }
         }, "AndroidShare");
         updates = new UpdateManager(this, web);
+        affiliateConnector = new AffiliateConnector(this, web);
+        web.addJavascriptInterface(affiliateConnector, "AndroidAffiliate");
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface public void check() { updates.check(); }
             @JavascriptInterface public void authorize() { updates.showCredentialsDialog(); }
@@ -119,6 +122,7 @@ public final class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (updates != null) { updates.close(); updates = null; }
+        if (affiliateConnector != null) { affiliateConnector.close(); affiliateConnector = null; }
         if (web != null) { web.destroy(); web = null; }
         super.onDestroy();
     }
