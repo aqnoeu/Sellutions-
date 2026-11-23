@@ -12,6 +12,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.graphics.Color;
 import android.view.WindowInsets;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.webkit.JavascriptInterface;
 import org.json.JSONObject;
 
@@ -26,18 +29,34 @@ public final class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.WHITE);
         getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 | android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        // Own the entire Activity window, then inset the WebView *layout*, not its
+        // internal padding. WebView padding does not resize its CSS viewport on
+        // edge-to-edge Android 15/16, which previously overlapped both bars.
+        final FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.WHITE);
         web = new WebView(this);
-        // Android 15+ draws apps behind system bars. Pad the WebView's content
-        // by the actual status/nav/cutout insets instead of hardcoded pixels.
+        FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        root.addView(web, webParams);
         if (Build.VERSION.SDK_INT >= 35) {
-            web.setOnApplyWindowInsetsListener((view, insets) -> {
-                android.graphics.Insets safe = insets.getInsets(
-                    WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                if (view.getPaddingTop() != safe.top || view.getPaddingBottom() != safe.bottom) {
-                    view.setPadding(safe.left, safe.top, safe.right, safe.bottom);
+            root.setOnApplyWindowInsetsListener((view, insets) -> {
+                android.graphics.Insets bars = insets.getInsets(
+                    WindowInsets.Type.statusBars()
+                    | WindowInsets.Type.navigationBars()
+                    | WindowInsets.Type.displayCutout());
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) web.getLayoutParams();
+                if (lp.leftMargin != bars.left || lp.topMargin != bars.top
+                        || lp.rightMargin != bars.right || lp.bottomMargin != bars.bottom) {
+                    lp.setMargins(bars.left, bars.top, bars.right, bars.bottom);
+                    web.setLayoutParams(lp);
                 }
                 return insets;
             });
+            root.post(root::requestApplyInsets);
+        }
+        if (Build.VERSION.SDK_INT >= 29) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
         }
         web.setBackgroundColor(Color.WHITE);
         WebSettings settings = web.getSettings();
@@ -86,7 +105,7 @@ public final class MainActivity extends Activity {
                 return true;
             }
         });
-        setContentView(web);
+        setContentView(root);
         // The local origin permits template persistence without exposing a remote server.
         // Asset loading is restricted to the packaged HTML file.
         web.loadUrl("file:///android_asset/index.html");
