@@ -76,6 +76,18 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 
 <p class="desc" style="margin-top:10px">A instalação de cada atualização exige sua confirmação no Android.</p>
 <div class="sectionhead"><h2>Contas de afiliados</h2></div>
+<details class="panel" style="padding:16px" id="affiliateHelp">
+  <summary style="cursor:pointer;font-weight:800;font-size:15px;color:#4c3325">Como conectar minha conta? <span style="color:#b65d0c">Guia simples</span></summary>
+  <p class="desc" style="margin-top:12px">Para divulgar produtos, você pode começar sem API: use os seus próprios links de afiliado. A conexão automática é opcional e depende do acesso liberado por cada plataforma.</p>
+  <div class="notice"><b>1. Shopee — começar agora</b><p style="margin-top:7px">Abra o portal de afiliados, faça login e gere seu próprio link. Volte à aba Produtos para cadastrá-lo. Isso não conecta automaticamente a API nem importa comissões.</p>
+  <button class="ghost full" style="margin-top:10px" onclick="openShopee()">Abrir Shopee Afiliados</button>
+  <button class="ghost full" style="margin-top:8px" onclick="openTab('catalog')">Cadastrar meu link no Sellutions</button></div>
+  <div class="notice"><b>2. Shopee — procurar a API (opcional)</b><p style="margin-top:7px">No portal de afiliados, procure Open API ou Abrir API. Se sua conta tiver acesso, a Shopee poderá mostrar App ID e Secret. Nem todas as contas têm acesso confirmado; se não aparecer, consulte o suporte da Shopee. Não compartilhe essas credenciais com terceiros nem as coloque em campos de link.</p>
+  <button class="ghost full" style="margin-top:10px" onclick="window.location.href='https://affiliate.shopee.com.br/open_api'">Consultar Open API oficial</button></div>
+  <div class="notice"><b>3. TikTok Shop — autorização oficial</b><p style="margin-top:7px">O login do criador só funciona após a aprovação e configuração da integração Sellutions no TikTok Shop Partner Center. Enquanto isso, o botão Conectar não garante acesso.</p>
+  <button class="ghost full" style="margin-top:10px" onclick="window.location.href='https://partner.tiktokshop.com/'">Consultar TikTok Shop Partner Center</button></div>
+  <p class="desc" style="margin-top:12px"><b>Importante:</b> não solicitamos sua senha Shopee ou TikTok, nem prometemos comissões ou conexão antes da verificação oficial.</p>
+</details>
 <div class="panel" style="padding:16px">
   <div class="setting"><div><strong>🛍️ Shopee Afiliados</strong><small>Conta pessoal · API de afiliados brasileira</small></div><span style="font-size:11px;color:#9e6714">Não conectada</span></div>
   <p class="desc">A Shopee ainda não disponibilizou ao Sellutions uma autorização de afiliado por login. Login de vendedor não serve para suas comissões. Seus links próprios continuam disponíveis na aba Produtos.</p>
