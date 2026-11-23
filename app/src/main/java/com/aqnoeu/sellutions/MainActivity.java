@@ -21,6 +21,7 @@ import org.json.JSONObject;
 public final class MainActivity extends Activity {
     private WebView web;
     private boolean pageReady = false;
+    private boolean updateChecked = false;
     private UpdateManager updates;
     private AffiliateConnector affiliateConnector;
     @Override public void onCreate(Bundle state) {
@@ -82,7 +83,6 @@ public final class MainActivity extends Activity {
         web.addJavascriptInterface(affiliateConnector, "AndroidAffiliate");
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface public void check() { updates.check(); }
-            @JavascriptInterface public void authorize() { updates.showCredentialsDialog(); }
             @JavascriptInterface public String version() {
                 try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; }
                 catch (Exception e) { return "desconhecida"; }
@@ -94,6 +94,7 @@ public final class MainActivity extends Activity {
                 if (url.startsWith("file:///android_asset/")) {
                     pageReady = true;
                     receiveSharedLink(getIntent());
+                    if (!updateChecked && updates != null) { updateChecked = true; updates.checkSilently(); }
                 }
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {

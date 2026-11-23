@@ -64,12 +64,12 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 <section class="tab" id="tab-queue"><h2 class="pageTitle">Minhas ofertas</h2><p class="desc">Preparadas localmente. Nenhum envio é efetuado sem conexão validada.</p><div class="stats"><div class="stat"><b id="queuedStat">0</b><small>Preparadas</small></div><div class="stat"><b id="sentStat">0</b><small>Confirmadas</small></div><div class="stat"><b id="cancelStat">0</b><small>Canceladas</small></div></div><div id="queueList"></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Editar modelos de mensagem</button></section>
 <section class="tab" id="tab-groups"><h2 class="pageTitle">Meus grupos</h2><p class="desc">Organize destinos locais enquanto a conexão WhatsApp não está disponível.</p><div id="groupsList"></div><button class="ghost full" onclick="openNewGroup()">＋ Adicionar grupo local</button><div class="notice">Grupos cadastrados aqui são somente referências locais. A criação, administração e postagem em grupos reais ainda dependem de integração.</div></section>
 <section class="tab" id="tab-settings"><h2 class="pageTitle">Preferências</h2><p class="desc">Configurações e conexões ficam aqui, fora do caminho principal.</p><div class="setting"><div><strong>Lembrar grupos escolhidos</strong><small>Sugerir os últimos destinos de uma oferta.</small></div><input type="checkbox" id="rememberGroups" checked onchange="savePrefs()"></div><div class="sectionhead"><h2>Modelos de publicação</h2></div><button class="ghost full" onclick="openTemplateEditor()">✏️ Personalizar meus modelos</button><div class="sectionhead"><h2>Atualizações do aplicativo</h2></div>
-<div class="setting"><div><strong>Versões privadas</strong><small>Atualize diretamente pelo Sellutions, sem baixar outro arquivo manualmente.</small></div></div>
+<div class="setting"><div><strong>Atualização automática</strong><small>O Sellutions procura versões novas ao abrir e atualiza sem você baixar outro arquivo.</small></div></div>
 <p class="desc" id="appVersion">Versão instalada: consultando...</p>
 <div class="notice" id="updateStatus" role="status" aria-live="polite">Toque em Verificar atualizações para consultar uma versão mais recente.</div>
 <button class="primary full" onclick="checkSellutionsUpdate()">↻ Verificar atualizações</button>
 
-<p class="desc" style="margin-top:10px">O acesso ao GitHub privado será solicitado somente na primeira verificação. A instalação de cada atualização exige sua confirmação no Android.</p>
+<p class="desc" style="margin-top:10px">A instalação de cada atualização exige sua confirmação no Android.</p>
 <div class="sectionhead"><h2>Contas de afiliados</h2></div>
 <div class="panel" style="padding:16px">
   <div class="setting"><div><strong>🛍️ Shopee Afiliados</strong><small>Conta pessoal · API de afiliados brasileira</small></div><span style="font-size:11px;color:#9e6714">Não conectada</span></div>

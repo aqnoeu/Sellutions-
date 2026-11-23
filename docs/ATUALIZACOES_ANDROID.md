@@ -1,4 +1,4 @@
-# Sellutions — Atualização dentro do APK (piloto privado)
+# Sellutions — Atualização dentro do APK
 
 ## Estado operacional
 A infraestrutura de publicação foi ativada em 23/11/2026:
@@ -6,22 +6,19 @@ A infraestrutura de publicação foi ativada em 23/11/2026:
 - `v0.1.1`: segundo APK de release com **mesma assinatura** e `versionCode` superior; a publicação verifica ambos antes de disponibilizar a atualização.
 - Workflow: `.github/workflows/android-release.yml`.
 - Artefatos da Release: `sellutions-release.apk` e `sellutions-release.apk.sha256`.
-- Repositório **privado**; as Releases são acessíveis apenas a pessoas autorizadas.
+- As Releases precisam estar públicas para o app atualizar sem token (ver abaixo).
 
 ## Como instalar
-Abrir https://github.com/aqnoeu/Sellutions-/releases/latest com uma conta que tenha permissão ao repositório e baixar `sellutions-release.apk` uma única vez para fazer a instalação inicial.
+Abrir https://github.com/aqnoeu/Sellutions-/releases/latest e baixar `sellutions-release.apk` uma única vez para fazer a instalação inicial.
 
 **Atenção:** uma versão debug assinada com outra chave não aceita instalação por cima; caso tenha o debug instalado, será necessário migrar os dados desejados e instalar a primeira release separadamente.
 
-## Como autorizar as próximas atualizações (uma vez)
-O APK consulta Releases privadas sem tornar o código-fonte público. No dispositivo:
-1. Criar, na própria conta GitHub autorizada a ler `aqnoeu/Sellutions-`, um token fine-grained de leitura para esse único repositório, com `Contents: read`. Não utilizar senha de acesso ao GitHub.
-2. Abrir **Configurações → Atualizações do aplicativo → Autorizar acesso às atualizações**.
-3. Colar o token no diálogo. Ele será guardado cifrado no Android Keystore.
-4. Tocar **Verificar atualizações**. Uma versão posterior será baixada e verificada pelo próprio aplicativo, que abrirá o instalador do Android.
-5. Confirmar a instalação do Android; a atualização será instalada sobre a anterior (mesmo pacote e assinatura).
+## Como o app se atualiza (sem token)
+O app consulta `releases/latest` do GitHub sem credenciais, ao abrir e no botão **Verificar atualizações**. Se houver `versionCode` maior, mostra "Atualização disponível"; ao confirmar, baixa o APK, confere SHA-256, pacote e versão e abre o instalador do Android (a confirmação final é exigência do Android).
 
-O usuário não precisa baixar os próximos APKs manualmente. O Android pode solicitar permissão para instalar APKs de origem externa e confirmação em cada atualização.
+**Requisito:** as Releases precisam ser legíveis sem login, ou seja, o repositório `aqnoeu/Sellutions-` deve estar público. Com repositório privado a consulta retorna 404 ("Nenhuma versão pública encontrada"). Releases em rascunho (como `signing-vault`, que guarda a chave de assinatura) não aparecem para o público.
+
+O token pessoal salvo por versões 0.2.x anteriores é apagado do aparelho na primeira verificação.
 
 ## Publicação automatizada
 Alterações em `app/**`, `assets/brand/**`, `scripts/check-ui.cjs` ou no workflow de release acionam a compilação; o próximo `v0.1.N` é escolhido automaticamente e a Release privada publica o APK e SHA-256. A chave é sempre a mesma.
@@ -40,11 +37,11 @@ Para aumentar a segurança no futuro, mover **exatamente a mesma chave** e sua s
 - `versionCode` Android crescente, verificado no build;
 - `SHA-256` do arquivo publicado e exigido pelo atualizador;
 - `applicationId` idêntico e `versionCode` maior verificados pelo APK antes de abrir o instalador;
-- Download HTTPS autenticado somente para `api.github.com`, sem transmitir token ao CDN após redirecionamento;
+- Download somente por HTTPS, sem credenciais;
 - Instalação oficial do Android, sempre sujeita à confirmação do usuário.
 
 ## Limites
-A instalação da Release privada inicial exige login GitHub no navegador. O atualizador do APK exige autorização de leitura da Release privada uma vez no dispositivo. A confirmação de instalação é exigência do Android.
+Quem está com uma versão 0.2.x antiga ainda precisa instalar uma vez o APK novo (manualmente ou com o token antigo); dali em diante o app se atualiza sozinho. A confirmação de instalação é exigência do Android.
 
 
 ## Teste de atualização efetivamente executado
