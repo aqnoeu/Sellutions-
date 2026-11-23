@@ -42,6 +42,11 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 .overlay{position:fixed;inset:0}
 .sheet{max-height:85%}
 @media(max-width:390px){.apphead{padding:10px 14px}.screen{padding-left:14px;padding-right:14px}.bottom .nav{font-size:11px}}
+
+/* Lucide-inspired navigation: consistent 24px outline icons (ISC licensed). */
+.bottom .nav .nav-icon{display:block;flex:none;width:24px;height:24px;stroke:currentColor;transition:stroke .15s ease}
+.bottom .nav span{display:block;line-height:1.2}
+.bottom .nav[aria-current="page"]{color:#dd6300}
 </style></head><body>
 <div class="wrap"><main class="device">
 <header class="apphead"><div class="appbrand"><img class="brand-svg" src="sellutions-icone.svg" alt="Ícone oficial Sellutions"><div><strong>Sellutions</strong><small id="subtitle">Encontrar e anunciar</small></div></div><button class="round" onclick="openTab('settings')" aria-label="Preferências"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96c-.5-.38-1.03-.69-1.62-.94L14.39 2.8a.49.49 0 0 0-.49-.4h-3.8a.49.49 0 0 0-.49.4L9.25 5.32c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.6.22L2.72 8.84a.49.49 0 0 0 .12.64l2.03 1.58c-.05.3-.08.62-.08.94s.03.64.08.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.38.3.6.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.52c.04.24.24.4.49.4h3.8c.25 0 .45-.16.49-.4l.36-2.52c.59-.24 1.13-.56 1.62-.94l2.39.96c.23.08.48 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.02-1.58ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg></button></header>
@@ -86,7 +91,7 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
   <button class="ghost full" onclick="saveAffiliateEndpoint()">Salvar endereço</button></details>
 </div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
 </div>
-<nav class="bottom"><button class="nav active" data-tab="home" onclick="openTab('home')"><span class="ico">⌂</span>Início</button><button class="nav" data-tab="catalog" onclick="openTab('catalog')"><span class="ico">▦</span>Produtos</button><button class="nav" data-tab="queue" onclick="openTab('queue')"><span class="ico">▤</span>Ofertas</button><button class="nav" data-tab="groups" onclick="openTab('groups')"><span class="ico">♧</span>Grupos</button></nav>
+<nav class="bottom" aria-label="Navegação principal"><button type="button" class="nav active" data-tab="home" onclick="openTab('home')" aria-label="Início" aria-current="page"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Início</span></button><button type="button" class="nav" data-tab="catalog" onclick="openTab('catalog')" aria-label="Produtos"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5L6 7Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Produtos</span></button><button type="button" class="nav" data-tab="queue" onclick="openTab('queue')" aria-label="Ofertas"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M3 11h18v9H3z"/><path d="M8 15h8"/></svg><span>Ofertas</span></button><button type="button" class="nav" data-tab="groups" onclick="openTab('groups')" aria-label="Grupos"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Grupos</span></button></nav>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div></div></div>
 </main></div>
 <script>
@@ -109,7 +114,7 @@ $('rememberGroups').checked=restore('rememberGroups',true);
 function openTab(tab){
 const valid=['home','catalog','queue','groups','settings'];if(!valid.includes(tab))return;
 document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active',e.id==='tab-'+tab));
-document.querySelectorAll('.nav').forEach(e=>e.classList.toggle('active',e.dataset.tab===tab));
+document.querySelectorAll('.nav').forEach(e=>{const selected=e.dataset.tab===tab;e.classList.toggle('active',selected);if(selected)e.setAttribute('aria-current','page');else e.removeAttribute('aria-current')});
 $('subtitle').textContent=({home:'Encontrar e anunciar',catalog:'Escolha o produto',queue:'Acompanhe suas ofertas',groups:'Seus grupos',settings:'Tudo do seu jeito'})[tab];
 $('scrollScreen').scrollTop=0;
 if(tab==='settings')refreshAppVersion();
