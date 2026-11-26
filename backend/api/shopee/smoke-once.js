@@ -1,13 +1,13 @@
 'use strict';
 const crypto=require('node:crypto');
 const {config,rate,search,link}=require('../../lib/shopee');
-const proof='97bee4364e0193a8f3880b86c6397b5784d62472fd5737cfaeff0544d2d3035f';
+const proof='0b0018c06af9ad70b6cc57159194a233a93098703aaacefe2db45d4a1a4a882a';
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');
  const nonce=req.query?.nonce;
  if(req.method!=='GET'||Date.now()>1795743529797||typeof nonce!=='string'||nonce.length!==64||crypto.createHash('sha256').update(nonce).digest('hex')!==proof)return res.status(404).json({error:'not_found'});
  try{
- const c=config(),r=await fetch(c.redis,{method:'POST',redirect:'error',signal:AbortSignal.timeout(5000),headers:{Authorization:'Bearer '+c.token,'Content-Type':'application/json'},body:JSON.stringify(['SET','sellutions:shopee:smoke:final:20261126','1','NX','EX',86400])});
+ const c=config(),r=await fetch(c.redis,{method:'POST',redirect:'error',signal:AbortSignal.timeout(5000),headers:{Authorization:'Bearer '+c.token,'Content-Type':'application/json'},body:JSON.stringify(['SET','sellutions:shopee:smoke:literal:20261126','1','NX','EX',86400])});
  const j=await r.json();if(!r.ok||j.error||!Object.hasOwn(j,'result'))return res.status(503).json({error:'storage_unavailable'});if(j.result!=='OK')return res.status(409).json({error:'probe_consumed'});
  await rate(c);
  const data=await search(c,{keyword:'fone',limit:3});
