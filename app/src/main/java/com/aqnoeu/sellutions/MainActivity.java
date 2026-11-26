@@ -24,6 +24,7 @@ public final class MainActivity extends Activity {
     private boolean updateChecked = false;
     private UpdateManager updates;
     private AffiliateConnector affiliateConnector;
+    private ShopeeConnector shopeeConnector;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(Color.rgb(255, 248, 240));
@@ -81,6 +82,8 @@ public final class MainActivity extends Activity {
         updates = new UpdateManager(this, web);
         affiliateConnector = new AffiliateConnector(this, web);
         web.addJavascriptInterface(affiliateConnector, "AndroidAffiliate");
+        shopeeConnector = new ShopeeConnector(this, web);
+        web.addJavascriptInterface(shopeeConnector, "AndroidShopee");
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface public void check() { updates.check(); }
             @JavascriptInterface public String version() {
@@ -143,6 +146,7 @@ public final class MainActivity extends Activity {
     @Override protected void onDestroy() {
         if (updates != null) { updates.close(); updates = null; }
         if (affiliateConnector != null) { affiliateConnector.close(); affiliateConnector = null; }
+        if (shopeeConnector != null) { shopeeConnector.close(); shopeeConnector = null; }
         if (web != null) { web.destroy(); web = null; }
         super.onDestroy();
     }

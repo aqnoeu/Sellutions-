@@ -47,18 +47,20 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 .bottom .nav .nav-icon{display:block;flex:none;width:24px;height:24px;stroke:currentColor;transition:stroke .15s ease}
 .bottom .nav span{display:block;line-height:1.2}
 .bottom .nav[aria-current="page"]{color:#dd6300}
+.shopee-photo{width:100%;aspect-ratio:1;object-fit:contain;background:#fff8f0;border-radius:12px}.shopee-meta{font-size:11px;color:var(--sub);margin:4px 0 8px}.shopee-actions{display:grid;gap:6px}.shopee-actions button{font-size:11px;padding:9px 5px}.product.shopee-card h3{height:auto;min-height:32px;overflow-wrap:anywhere}.shopee-card .price{font-size:16px;overflow-wrap:anywhere}button:disabled{opacity:.5}[hidden]{display:none!important}
 </style></head><body>
 <div class="wrap"><main class="device">
 <header class="apphead"><div class="appbrand"><img class="brand-svg" src="sellutions-icone.svg" alt="Ícone oficial Sellutions"><div><strong>Sellutions</strong><small id="subtitle">Encontrar e anunciar</small></div></div><button class="round" onclick="openTab('settings')" aria-label="Preferências"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96c-.5-.38-1.03-.69-1.62-.94L14.39 2.8a.49.49 0 0 0-.49-.4h-3.8a.49.49 0 0 0-.49.4L9.25 5.32c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.6.22L2.72 8.84a.49.49 0 0 0 .12.64l2.03 1.58c-.05.3-.08.62-.08.94s.03.64.08.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.38.3.6.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.52c.04.24.24.4.49.4h3.8c.25 0 .45-.16.49-.4l.36-2.52c.59-.24 1.13-.56 1.62-.94l2.39.96c.23.08.48 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.02-1.58ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg></button></header>
 <div class="screen" id="scrollScreen">
-<section class="tab active" id="tab-home"><div class="hero"><img class="hero-symbol" src="sellutions-cifrao.svg" alt="" aria-hidden="true"><small>Olá! Vamos encontrar uma oferta?</small><h2>Anuncie em poucos toques.</h2><p>Escolha um produto e onde divulgar. Os textos ficam do seu jeito.</p></div><div class="quick"><button onclick="openTab('catalog')"><span>🛍️</span><div>Explorar<small>Shopee e TikTok Shop</small></div></button><button onclick="openTemplateEditor()"><span>✍️</span><div>Meus modelos<small>Personalizar textos</small></div></button></div><div class="sectionhead"><h2>Ofertas em destaque</h2><button class="linkbtn" onclick="openTab('catalog')">Ver produtos →</button></div><div class="empty"><div class="big">🛍️</div><b>Conecte uma loja</b><p>As ofertas reais aparecerão aqui quando sua API Shopee ou TikTok Shop estiver autorizada.</p></div><div class="sectionhead"><h2>Minhas ofertas</h2><button class="linkbtn" onclick="openTab('queue')">Ver atividade →</button></div><div id="homeStatus" class="shortcut"></div></section>
-<section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><button class="primary full" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice">Shopee: não conectada. TikTok Shop: não conectada. As APIs ainda precisam ser autorizadas.</div><div class="products" id="catalogProducts"></div>
-<div class="panel" style="margin-top:17px;padding:15px">
-<h2>Usar minha conta Shopee</h2>
-<p>Entre na Shopee pelo navegador e copie seu próprio link de afiliado. Não é necessário informar senha ou chave ao Sellutions. O login no navegador não conecta a API.</p>
+<section class="tab active" id="tab-home"><div class="hero"><img class="hero-symbol" src="sellutions-cifrao.svg" alt="" aria-hidden="true"><small>Olá! Vamos encontrar uma oferta?</small><h2>Anuncie em poucos toques.</h2><p>Escolha um produto e onde divulgar. Os textos ficam do seu jeito.</p></div><div class="quick"><button onclick="openTab('catalog')"><span>🛍️</span><div>Explorar<small>Shopee e TikTok Shop</small></div></button><button onclick="openTemplateEditor()"><span>✍️</span><div>Meus modelos<small>Personalizar textos</small></div></button></div><div class="sectionhead"><h2>Ofertas em destaque</h2><button class="linkbtn" onclick="openTab('catalog')">Ver produtos →</button></div><div class="empty"><div class="big">🛍️</div><b>Encontre ofertas reais</b><p>Conecte a Shopee em Preferências e explore o catálogo de afiliados.</p></div><div class="sectionhead"><h2>Minhas ofertas</h2><button class="linkbtn" onclick="openTab('queue')">Ver atividade →</button></div><div id="homeStatus" class="shortcut"></div></section>
+<section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" maxlength="100" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><button id="searchProductsBtn" class="primary full" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice" role="status" aria-live="polite">Conecte a Shopee para pesquisar ofertas reais.</div><button id="catalogConnectShopee" class="ghost full" onclick="connectShopee()">Conectar Shopee</button><div class="products" id="catalogProducts"></div><button id="shopeeMore" class="ghost full" style="margin-top:12px" hidden onclick="searchShopeePage(shopeePage+1)">Carregar mais</button>
+<div id="shopeeLinkPanel" class="panel" style="margin-top:17px;padding:15px">
+<h2>Gerar link ou preparar oferta</h2>
+<p>Importe um link de produto para gerar seu link de afiliado ou use um link de afiliado que você já possui.</p>
 <button class="ghost full" style="margin:12px 0" onclick="openShopee()">Abrir Shopee Afiliados</button>
-<label class="templabel" for="affiliateUrl">Seu link de afiliado Shopee</label>
+<label class="templabel" for="affiliateUrl">Link de produto ou de afiliado Shopee</label>
 <input class="field" id="affiliateUrl" type="url" placeholder="https://s.shopee.com.br/..." autocomplete="off" inputmode="url">
+<div class="templateactions"><button id="shopeeGenerateBtn" class="ghost" onclick="generateShopeeLink()">Gerar link de afiliado</button><button class="ghost" onclick="copyShopeeLink()">Copiar link</button></div>
 <label class="templabel" for="affiliateTitle">Nome do produto</label>
 <input class="field" id="affiliateTitle" placeholder="Ex.: Fone bluetooth" maxlength="180">
 <label class="templabel" for="affiliatePrice">Preço (opcional; confirme na Shopee)</label>
@@ -93,9 +95,11 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 <p class="desc" style="margin-top:14px"><b>TikTok Shop:</b> não há API para você procurar no celular. O Sellutions precisa obter aprovação de integração no TikTok Shop Partner Center antes de oferecer login de criador.</p>
 </details>
 <div class="panel" style="padding:16px">
-  <div class="setting"><div><strong>🛍️ Shopee Afiliados</strong><small>Conta pessoal · API de afiliados brasileira</small></div><span style="font-size:11px;color:#9e6714">Não conectada</span></div>
-  <p class="desc">A Shopee ainda não disponibilizou ao Sellutions uma autorização de afiliado por login. Login de vendedor não serve para suas comissões. Seus links próprios continuam disponíveis na aba Produtos.</p>
-  <button class="ghost full" onclick="openTab('catalog')">Usar meu próprio link Shopee</button>
+  <div class="setting"><div><strong>🛍️ Shopee Afiliados</strong><small>Conta pessoal · API de afiliados brasileira</small></div><span id="shopeeConnectionLabel" style="font-size:11px;color:#9e6714">Não conectada</span></div>
+  <p class="desc">Use somente o código privado do piloto. A conexão dura enquanto o aplicativo estiver aberto.</p>
+  <div id="shopeeConnectionStatus" class="notice" role="status" aria-live="polite">Conecte para consultar o catálogo de afiliados.</div>
+  <div class="templateactions"><button id="shopeeConnectBtn" class="primary" onclick="connectShopee()">Conectar</button><button class="ghost" onclick="disconnectShopee()">Desconectar</button></div>
+  <button class="ghost full" onclick="openTab('catalog');setStore('Shopee')">Explorar ofertas Shopee</button>
   <div class="setting"><div><strong>🎵 TikTok Shop Creator</strong><small>Autorização oficial do criador, com consentimento</small></div><span id="tiktokConnectionLabel" style="font-size:11px;color:#9e6714">Não conectada</span></div>
   <div class="notice" id="affiliateConnectionStatus" role="status" aria-live="polite">Servidor oficial definido. A conexão exige aprovação e liberação do piloto.</div>
   <button class="primary full" style="margin-top:10px" onclick="connectTikTokShop()">Conectar TikTok Shop</button>
@@ -105,7 +109,7 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
   <label class="templabel" for="affiliateServerUrl">Endereço HTTPS do servidor</label>
   <input class="field" id="affiliateServerUrl" type="url" value="https://sellutions.vercel.app" readonly autocomplete="off">
   <button class="ghost full" onclick="saveAffiliateEndpoint()">Salvar endereço</button></details>
-</div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
+</div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> catálogo, preços, comissões e geração de links pelo servidor oficial<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: servidor oficial Sellutions. Nenhuma credencial da API fica embutida neste APK.</div></section>
 </div>
 <nav class="bottom" aria-label="Navegação principal"><button type="button" class="nav active" data-tab="home" onclick="openTab('home')" aria-label="Início" aria-current="page"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Início</span></button><button type="button" class="nav" data-tab="catalog" onclick="openTab('catalog')" aria-label="Produtos"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5L6 7Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Produtos</span></button><button type="button" class="nav" data-tab="queue" onclick="openTab('queue')" aria-label="Ofertas"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M3 11h18v9H3z"/><path d="M8 15h8"/></svg><span>Ofertas</span></button><button type="button" class="nav" data-tab="groups" onclick="openTab('groups')" aria-label="Grupos"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Grupos</span></button></nav>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div></div></div>
@@ -138,15 +142,104 @@ render();
 }
 function showSheet(html){$('modalBody').innerHTML=html;$('overlay').classList.add('open')}
 function closeSheet(){$('overlay').classList.remove('open')}
-function setStore(value){$('catalogProducts').replaceChildren();selectedStore=value;document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));$('catalogStatus').textContent='Loja selecionada: '+value+'. Aguardando autorização da API.'}
+let shopeeConnected=false,shopeePage=0,shopeeQuery='',shopeeSearchId=0,shopeeLinkId=0,shopeeSearchBusy=false,shopeeLinkBusy=false,shopeeNeedsLink=false;
+function setStore(value){
+ $('catalogProducts').replaceChildren();selectedStore=value;shopeeSearchId++;shopeeSearchBusy=false;shopeePage=0;shopeeQuery='';
+ $('searchProductsBtn').disabled=false;$('shopeeMore').hidden=true;$('shopeeLinkPanel').hidden=value!=='Shopee';
+ $('catalogConnectShopee').hidden=value!=='Shopee'||shopeeConnected;
+ document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));
+ $('catalogStatus').textContent=value==='Shopee'?(shopeeConnected?'Digite o produto que deseja encontrar.':'Conecte a Shopee para pesquisar ofertas reais.'):'TikTok Shop: conecte sua conta em Preferências.';
+}
 function searchProducts(){
- const q=$('search').value.trim();$('catalogProducts').replaceChildren();
- if(!q){$('catalogStatus').textContent='Digite o nome de um produto para pesquisar.';return;}
- if(selectedStore==='TikTok Shop'&&window.AndroidAffiliate&&typeof window.AndroidAffiliate.searchTikTok==='function'){
+ const q=$('search').value.trim();if(!q){$('catalogStatus').textContent='Digite o nome de um produto para pesquisar.';return;}
+ if(selectedStore==='Shopee'){
+   if(!shopeeConnected){$('catalogStatus').textContent='Conecte a Shopee primeiro.';return;}
+   if(shopeeSearchBusy)return;
+   shopeeQuery=q;shopeePage=0;$('catalogProducts').replaceChildren();searchShopeePage(1);return;
+ }
+ $('catalogProducts').replaceChildren();
+ if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.searchTikTok==='function'){
    $('catalogStatus').textContent='Consultando o catálogo autorizado do TikTok Shop…';window.AndroidAffiliate.searchTikTok(q);return;
  }
  $('catalogStatus').textContent='A API da loja ainda não está conectada.';
 }
+function connectShopee(){if(window.AndroidShopee)window.AndroidShopee.connect();else onShopeeConnection('error','Abra o APK Android atualizado.');}
+function disconnectShopee(){if(window.AndroidShopee)window.AndroidShopee.disconnect();else onShopeeConnection('disconnected','Não conectada.');}
+function onShopeeConnection(status,message){
+ shopeeConnected=status==='connected';$('shopeeConnectionLabel').textContent=shopeeConnected?'Conectada':status==='connecting'?'Verificando…':'Não conectada';
+ $('shopeeConnectionLabel').style.color=shopeeConnected?'#13894d':'#9e6714';$('shopeeConnectionStatus').textContent=message;
+ $('shopeeConnectBtn').disabled=status==='connecting'||shopeeConnected;$('catalogConnectShopee').hidden=selectedStore!=='Shopee'||shopeeConnected;$('catalogConnectShopee').disabled=status==='connecting';
+ if(selectedStore==='Shopee')$('catalogStatus').textContent=message;
+ if(!shopeeConnected){shopeeSearchId++;shopeeLinkId++;shopeeSearchBusy=false;shopeeLinkBusy=false;$('searchProductsBtn').disabled=false;$('shopeeGenerateBtn').disabled=false;$('shopeeMore').hidden=true;if(selectedStore==='Shopee')$('catalogProducts').replaceChildren();}
+}
+function searchShopeePage(page){
+ if(!shopeeConnected||!shopeeQuery||shopeeSearchBusy||page>100||!window.AndroidShopee)return;
+ shopeeSearchBusy=true;$('searchProductsBtn').disabled=true;$('shopeeMore').hidden=true;$('catalogStatus').textContent='Pesquisando ofertas na Shopee…';
+ window.AndroidShopee.search(shopeeQuery,page,++shopeeSearchId);
+}
+function shopeeMoney(v){
+ if(v===null||v===undefined||v===''||!Number.isFinite(Number(v))||Number(v)<0)return '';
+ return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function shopeePrice(p){const low=shopeeMoney(p.price_min),high=shopeeMoney(p.price_max);return low&&high&&Number(p.price_min)!==Number(p.price_max)?low+' – '+high:low||high||'';}
+function shopeeCommission(v){if(v===null||v===undefined||v===''||!Number.isFinite(Number(v))||Number(v)<0)return '';return 'Comissão: '+(Number(v)*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%';}
+function shopeeImage(raw){try{const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['shopee.com.br','susercontent.com','shopeemobile.com'].some(d=>u.hostname===d||u.hostname.endsWith('.'+d))?u.href:'';}catch(e){return '';}}
+function shopeeEl(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+function shopeeButton(label,cls,fn){const b=shopeeEl('button',cls,label);b.type='button';b.addEventListener('click',fn);return b;}
+function onShopeeCatalog(id,raw,error){
+ if(id!==shopeeSearchId||selectedStore!=='Shopee')return;
+ shopeeSearchBusy=false;$('searchProductsBtn').disabled=false;
+ if(error){$('catalogStatus').textContent=String(error);$('shopeeMore').hidden=shopeePage===0;return;}
+ let data;try{data=JSON.parse(raw)}catch(e){$('catalogStatus').textContent='Resposta inválida.';return;}
+ if(!Array.isArray(data.products)){$('catalogStatus').textContent='Resposta inválida.';return;}
+ shopeePage++;const grid=$('catalogProducts');
+ for(const p of data.products){
+   if(!p||typeof p.title!=='string')continue;
+   const card=shopeeEl('article','product shopee-card');const imgUrl=shopeeImage(p.image_url);
+   if(imgUrl){const img=shopeeEl('img','shopee-photo');img.src=imgUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.addEventListener('error',()=>img.remove());card.appendChild(img);}
+   card.append(shopeeEl('div','store','Shopee'),shopeeEl('h3','',p.title),shopeeEl('div','price',shopeePrice(p)||'Consulte o preço'));
+   const meta=[];if(p.discount_rate!==null&&Number(p.discount_rate)>0&&Number(p.discount_rate)<=100)meta.push('Desconto: '+Number(p.discount_rate)+'%');
+   const commission=shopeeCommission(p.commission_rate);if(commission)meta.push(commission);
+   if(meta.length)card.appendChild(shopeeEl('div','shopee-meta',meta.join(' · ')));
+   const actions=shopeeEl('div','shopee-actions');
+   const affiliate=typeof p.affiliate_url==='string'&&isShopeeLink(p.affiliate_url)?p.affiliate_url:'';
+   const product=typeof p.product_url==='string'&&isShopeeLink(p.product_url)?p.product_url:'';
+   if(affiliate||product)actions.appendChild(shopeeButton('Preparar oferta','primary',()=>selectShopeeProduct(p,affiliate||product,!!affiliate)));
+   if(affiliate)actions.appendChild(shopeeButton('Copiar link de afiliado','ghost',()=>{window.AndroidShopee.copyLink(affiliate);$('catalogStatus').textContent='Link de afiliado copiado.';}));
+   if(product)actions.appendChild(shopeeButton('Ver na Shopee','ghost',()=>{window.location.href=product;}));
+   card.appendChild(actions);grid.appendChild(card);
+ }
+ $('catalogStatus').textContent=grid.children.length?grid.children.length+' ofertas encontradas. Preços e comissões podem mudar.':'Nenhum produto encontrado.';
+ $('shopeeMore').hidden=!(data.has_next_page&&shopeePage<100);
+}
+function selectShopeeProduct(p,url,affiliate){
+ shopeeLinkId++;shopeeLinkBusy=false;$('shopeeGenerateBtn').disabled=false;shopeeNeedsLink=!affiliate;
+ $('affiliateUrl').value=url;$('affiliateTitle').value=p.title.slice(0,180);$('affiliatePrice').value=shopeePrice(p).slice(0,32);
+ $('affiliateFeedback').textContent=affiliate?'Link de afiliado recebido da Shopee. Revise os dados antes de compartilhar.':'Link de produto recebido. Gere seu link de afiliado antes de anunciar.';
+ $('shopeeLinkPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function generateShopeeLink(){
+ const url=$('affiliateUrl').value.trim(),feedback=$('affiliateFeedback');
+ if(!isShopeeLink(url)){feedback.textContent='Informe um link HTTPS válido da Shopee.';return;}
+ if(!shopeeConnected||!window.AndroidShopee){feedback.textContent='Conecte a Shopee antes de gerar seu link.';return;}
+ if(shopeeLinkBusy)return;
+ shopeeLinkBusy=true;$('shopeeGenerateBtn').disabled=true;feedback.textContent='Gerando link de afiliado…';
+ window.AndroidShopee.generateLink(url,++shopeeLinkId);
+}
+function onShopeeLink(id,raw,error){
+ if(id!==shopeeLinkId)return;
+ shopeeLinkBusy=false;$('shopeeGenerateBtn').disabled=false;
+ if(error){$('affiliateFeedback').textContent=String(error);return;}
+ let data;try{data=JSON.parse(raw)}catch(e){$('affiliateFeedback').textContent='Resposta inválida.';return;}
+ if(!isShopeeLink(data.affiliate_url)){$('affiliateFeedback').textContent='Link inválido.';return;}
+ $('affiliateUrl').value=data.affiliate_url;shopeeNeedsLink=false;$('affiliateFeedback').textContent='Link de afiliado gerado pela Shopee. Copie ou prepare sua oferta.';
+}
+function copyShopeeLink(){
+ const url=$('affiliateUrl').value.trim();if(!isShopeeLink(url)||shopeeNeedsLink){$('affiliateFeedback').textContent='Gere ou informe um link de afiliado válido.';return;}
+ if(window.AndroidShopee){window.AndroidShopee.copyLink(url);$('affiliateFeedback').textContent='Link copiado.';}
+}
+$('affiliateUrl').addEventListener('input',()=>{shopeeLinkId++;shopeeLinkBusy=false;shopeeNeedsLink=looksLikeShopeeProduct($('affiliateUrl').value);$('shopeeGenerateBtn').disabled=false;});
+$('search').addEventListener('keydown',e=>{if(e.key==='Enter')searchProducts();});
 function onTikTokCatalog(raw,error){
  if(selectedStore!=='TikTok Shop')return;
  const grid=$('catalogProducts');grid.replaceChildren();
@@ -167,21 +260,23 @@ function openShopee(){window.location.href='https://affiliate.shopee.com.br/'}
 function isShopeeLink(raw){
  try{
   const u=new URL(raw);
-  if(u.protocol!=='https:')return false;
+  if(u.protocol!=='https:'||u.username||u.password||u.port)return false;
   const h=u.hostname.toLowerCase();
-  return ['shopee.com.br','www.shopee.com.br','s.shopee.com.br','shope.ee','affiliate.shopee.com.br','s.shopee.co.id'].includes(h);
+  return h==='shopee.com.br'||h.endsWith('.shopee.com.br')||h==='shope.ee';
  }catch(e){return false}
 }
+function looksLikeShopeeProduct(raw){try{const u=new URL(raw);return /\/product\/|[-]i\.\d+\.\d+/.test(u.pathname)}catch(e){return false}}
 function fillAffiliateLink(raw){
  if(!raw||!isShopeeLink(raw))return;
- openTab('catalog');setStore('Shopee');$('affiliateUrl').value=raw;
- $('affiliateFeedback').textContent='Link recebido. Confirme o nome e o preço antes de preparar.';
+ openTab('catalog');setStore('Shopee');shopeeLinkId++;shopeeLinkBusy=false;shopeeNeedsLink=looksLikeShopeeProduct(raw);$('shopeeGenerateBtn').disabled=false;$('affiliateUrl').value=raw;
+ $('affiliateFeedback').textContent='Link recebido. Gere seu link de afiliado se for um link de produto e confirme os dados.';
 }
 function prepareShopeeOffer(){
  const link=$('affiliateUrl').value.trim(),title=$('affiliateTitle').value.trim(),price=$('affiliatePrice').value.trim();
  const feedback=$('affiliateFeedback');
+ if(shopeeLinkBusy||shopeeNeedsLink){feedback.textContent='Gere o link de afiliado antes de preparar a oferta.';return;}
  if(!isShopeeLink(link)){feedback.textContent='Insira um link HTTPS válido da Shopee. Links de outras lojas não são aceitos aqui.';return}
- if(!title){feedback.textContent='Informe o nome real do produto; não temos acesso automático ao catálogo.';return}
+ if(!title){feedback.textContent='Informe o nome real do produto.';return}
  const offer={id:String(Date.now()),title,price,store:'Shopee',link,status:'prepared'};
  queue.unshift(offer);persist('queue',queue);
  feedback.textContent='Anúncio preparado localmente. Isso não confirma a atribuição de comissão: use seu link de afiliado original.';
