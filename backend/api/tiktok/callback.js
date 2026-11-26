@@ -8,8 +8,7 @@ module.exports = function handler(req, res) {
     return res.status(405).json({error:'method_not_allowed'});
   }
   const q = req.query || {};
-  if (Object.keys(q).length) {
-    // Fail closed until state validation and token exchange are implemented.
+  if (['code','auth_code','state','error','error_description'].some(key => Object.prototype.hasOwnProperty.call(q,key))) {
     return res.status(503).json({status:'authorization_not_configured',message:'Nenhuma conta foi conectada.'});
   }
   return res.status(200).json({service:'Sellutions',provider:'tiktok-shop',status:'callback_available',authorization:'not_configured'});
