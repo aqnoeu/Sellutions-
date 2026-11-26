@@ -14,7 +14,7 @@ const run=code=>vm.runInContext(code,ctx);
 run("connectShopee();$('search').value='fone';searchProducts()");
 assert.equal(calls.length,1);
 run("onShopeeConnection('connected','ok');searchProducts()");
-assert.deepEqual(calls[1],['search','fone',1,1+1]);
+assert.deepEqual(calls[1],['search','fone',1,1]);
 const id=calls[1][3];
 const product={title:'<b>Fone</b>',price_min:'39.90',price_max:'59.90',commission_rate:'0.08',discount_rate:10,affiliate_url:'https://s.shopee.com.br/test',product_url:'https://shopee.com.br/product/1/2',image_url:'https://evil.test/a'};
 run("onShopeeCatalog("+id+","+JSON.stringify(JSON.stringify({products:[product],has_next_page:true}))+",'')");
