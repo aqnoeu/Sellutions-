@@ -1,15 +1,3 @@
-// OAuth callback reservation. Never echo or store authorization codes.
-module.exports = function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('Referrer-Policy', 'no-referrer');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
-    return res.status(405).json({error:'method_not_allowed'});
-  }
-  const q = req.query || {};
-  if (['code','auth_code','state','error','error_description'].some(key => Object.prototype.hasOwnProperty.call(q,key))) {
-    return res.status(503).json({status:'authorization_not_configured',message:'Nenhuma conta foi conectada.'});
-  }
-  return res.status(200).json({service:'Sellutions',provider:'tiktok-shop',status:'callback_available',authorization:'not_configured'});
-};
+const {cfg,complete,headers}=require('../../lib/tiktok');
+function page(res,status,success){res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'");return res.status(status).send('<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sellutions</title><style>body{font:16px system-ui;background:#fff;color:#151515;display:grid;place-items:center;min-height:100vh;margin:0}main{max-width:420px;margin:24px;padding:32px;border:1px solid #ffe0b3;border-radius:24px;text-align:center}img{width:80px}h1{font-size:25px;color:#ae3c00}p{line-height:1.6;color:#6b7280}@media(prefers-color-scheme:dark){body{background:#000;color:#fff}main{background:#151515;border-color:#333}h1{color:#ff7a00}p{color:#bbb}}</style><main><img src="/brand/sellutions-icone.svg" alt="Sellutions"><h1>'+(success?'Autorização recebida':'Autorização não concluída')+'</h1><p>'+(success?'Volte ao Sellutions e toque em Verificar conexão.':'Volte ao aplicativo e tente novamente. A integração pode depender da aprovação do TikTok.')+'</p></main></html>')}
+module.exports=async function(req,res){headers(res);if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'method_not_allowed'})}const q=req.query||{};if(!['code','state','error','app_key','auth_code'].some(k=>Object.hasOwn(q,k)))return res.status(200).json({service:'Sellutions',provider:'tiktok-shop',status:'callback_available',authorization:'pilot_gated'});try{await complete(cfg(),q);return page(res,200,true)}catch(e){return page(res,e.status||500,false)}};
