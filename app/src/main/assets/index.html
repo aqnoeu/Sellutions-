@@ -97,13 +97,13 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
   <p class="desc">A Shopee ainda não disponibilizou ao Sellutions uma autorização de afiliado por login. Login de vendedor não serve para suas comissões. Seus links próprios continuam disponíveis na aba Produtos.</p>
   <button class="ghost full" onclick="openTab('catalog')">Usar meu próprio link Shopee</button>
   <div class="setting"><div><strong>🎵 TikTok Shop Creator</strong><small>Autorização oficial do criador, com consentimento</small></div><span id="tiktokConnectionLabel" style="font-size:11px;color:#9e6714">Não conectada</span></div>
-  <div class="notice" id="affiliateConnectionStatus" role="status" aria-live="polite">A conexão exige um aplicativo TikTok Shop Creator aprovado e um serviço de integração seguro.</div>
+  <div class="notice" id="affiliateConnectionStatus" role="status" aria-live="polite">Servidor oficial definido. A conexão exige aprovação e liberação do piloto.</div>
   <button class="primary full" style="margin-top:10px" onclick="connectTikTokShop()">Conectar TikTok Shop</button>
   <div class="templateactions"><button class="ghost" onclick="checkTikTokShop()">Verificar conexão</button><button class="ghost" onclick="disconnectTikTokShop()">Desconectar</button></div>
   <details style="margin-top:10px"><summary style="color:#76594c;font-size:12px">Configuração técnica do mantenedor</summary>
   <p class="desc">Somente configure o endereço HTTPS de um servidor Sellutions que já tenha sido aprovado pela plataforma. Não informe aqui senhas, App Secrets ou tokens de afiliado.</p>
   <label class="templabel" for="affiliateServerUrl">Endereço HTTPS do servidor</label>
-  <input class="field" id="affiliateServerUrl" type="url" placeholder="https://seu-servidor.example" autocomplete="off">
+  <input class="field" id="affiliateServerUrl" type="url" value="https://sellutions.vercel.app" readonly autocomplete="off">
   <button class="ghost full" onclick="saveAffiliateEndpoint()">Salvar endereço</button></details>
 </div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> importação de links de afiliado disponível em Produtos; busca automática depende de credenciais autorizadas<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: sem login Sellutions ou servidor próprio. Nenhuma credencial fica embutida neste APK.</div></section>
 </div>
@@ -138,8 +138,30 @@ render();
 }
 function showSheet(html){$('modalBody').innerHTML=html;$('overlay').classList.add('open')}
 function closeSheet(){$('overlay').classList.remove('open')}
-function setStore(value){selectedStore=value;document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));$('catalogStatus').textContent='Loja selecionada: '+value+'. Aguardando autorização da API.'}
-function searchProducts(){const q=$('search').value.trim();$('catalogStatus').textContent=q?'Não foi possível consultar "'+q+'" na '+selectedStore+': API ainda não conectada.':'Digite o nome de um produto para pesquisar.'}
+function setStore(value){$('catalogProducts').replaceChildren();selectedStore=value;document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));$('catalogStatus').textContent='Loja selecionada: '+value+'. Aguardando autorização da API.'}
+function searchProducts(){
+ const q=$('search').value.trim();$('catalogProducts').replaceChildren();
+ if(!q){$('catalogStatus').textContent='Digite o nome de um produto para pesquisar.';return;}
+ if(selectedStore==='TikTok Shop'&&window.AndroidAffiliate&&typeof window.AndroidAffiliate.searchTikTok==='function'){
+   $('catalogStatus').textContent='Consultando o catálogo autorizado do TikTok Shop…';window.AndroidAffiliate.searchTikTok(q);return;
+ }
+ $('catalogStatus').textContent='A API da loja ainda não está conectada.';
+}
+function onTikTokCatalog(raw,error){
+ if(selectedStore!=='TikTok Shop')return;
+ const grid=$('catalogProducts');grid.replaceChildren();
+ if(error){$('catalogStatus').textContent=String(error);return;}
+ let data;try{data=JSON.parse(raw)}catch(e){$('catalogStatus').textContent='Resposta inválida.';return;}
+ const products=Array.isArray(data.products)?data.products:[];
+ $('catalogStatus').textContent=products.length?products.length+' produtos encontrados. Links de divulgação ainda não habilitados.':'Nenhum produto encontrado.';
+ for(const p of products){
+   const card=document.createElement('article');card.className='product';
+   const store=document.createElement('div');store.className='store';store.textContent='TikTok Shop';
+   const title=document.createElement('h3');title.textContent=p.title||'Produto sem título';
+   const price=document.createElement('div');price.className='price';price.textContent=p.price&&p.currency?p.currency+' '+p.price:'Consulte o preço';
+   card.append(store,title,price);grid.appendChild(card);
+ }
+}
 // Sem OAuth da API de afiliados: abrir o portal nao autoriza acesso do Sellutions.
 function openShopee(){window.location.href='https://affiliate.shopee.com.br/'}
 function isShopeeLink(raw){
