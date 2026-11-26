@@ -24,12 +24,12 @@ async function rate(c,fetcher=fetch){
   }catch(e){if(e instanceof Failure)throw e;throw new Failure(503,'storage_unavailable')}
 }
 async function graphql(c,query,variables,fetcher=fetch){
-  const body=JSON.stringify({query,variables});let r,j;
-  try{r=await fetcher(URL_API,{method:'POST',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(12000),headers:{Authorization:authorization(c,body),'Content-Type':'application/json'},body});j=await r.json()}catch{throw new Failure(502,'shopee_unavailable')}
+  const body=JSON.stringify(variables===undefined?{query}:{query,variables});let r,j;
+  try{r=await fetcher(URL_API,{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),headers:{Authorization:authorization(c,body),'Content-Type':'application/json'},body});j=await r.json()}catch{throw new Failure(502,'shopee_unavailable')}
   if(r.status===429)throw new Failure(429,'shopee_rate_limit');
   if(r.status===401||r.status===403)throw new Failure(403,'shopee_authorization_failed');
   if(Array.isArray(j?.errors)&&j.errors.length){
-    const code=Number(j.errors[0]?.extensions?.code);
+    const code=Number(j.errors[0]?.extensions?.code??j.errors[0]?.code);
     if(code===10020||code===10035)throw new Failure(403,'shopee_authorization_failed');
     if(code===10030)throw new Failure(429,'shopee_rate_limit');
     throw new Failure(502,'shopee_graphql_error');
@@ -37,8 +37,8 @@ async function graphql(c,query,variables,fetcher=fetch){
   if(!r.ok||!j?.data||typeof j.data!=='object')throw new Failure(502,'shopee_invalid_response');
   return j.data;
 }
-const SEARCH='query Products($keyword:String!, $page:Int!, $limit:Int!){productOfferV2(keyword:$keyword,page:$page,limit:$limit){nodes{itemId productName productLink offerLink imageUrl priceMin priceMax priceDiscountRate commissionRate} pageInfo{page limit hasNextPage}}}';
-const LINK='mutation Link($url:String!){generateShortLink(input:{originUrl:$url}){shortLink}}';
+const searchQuery=({keyword,page,limit})=>'{productOfferV2(keyword:'+JSON.stringify(keyword)+',sortType:1,page:'+page+',limit:'+limit+'){nodes{itemId productName productLink offerLink imageUrl priceMin priceMax priceDiscountRate commissionRate} pageInfo{page limit hasNextPage}}}';
+const linkQuery=url=>'mutation {generateShortLink(input:{originUrl:'+JSON.stringify(url)+'}){shortLink}}';
 function searchArgs(body){
   const keyword=typeof body.keyword==='string'?body.keyword.trim():'',page=body.page??1,limit=body.limit??10;
   if(!keyword||keyword.length>100||!Number.isInteger(page)||page<1||page>100||!Number.isInteger(limit)||limit<1||limit>20)throw new Failure(400,'invalid_search');
@@ -51,13 +51,13 @@ function shopeeUrl(raw){
   return u.toString();
 }
 async function search(c,body,fetcher=fetch){
-  const result=(await graphql(c,SEARCH,searchArgs(body),fetcher)).productOfferV2;
+  const result=(await graphql(c,searchQuery(searchArgs(body)),undefined,fetcher)).productOfferV2;
   if(!Array.isArray(result?.nodes))throw new Failure(502,'shopee_invalid_response');
   const products=result.nodes.filter(p=>p&&typeof p.productName==='string').map(p=>({id:String(p.itemId??''),title:p.productName,product_url:p.productLink??null,affiliate_url:p.offerLink??null,image_url:p.imageUrl??null,price_min:p.priceMin??null,price_max:p.priceMax??null,discount_rate:p.priceDiscountRate??null,commission_rate:p.commissionRate??null,currency:'BRL'}));
   return {products,has_next_page:result.pageInfo?.hasNextPage===true};
 }
 async function link(c,body,fetcher=fetch){
-  const result=(await graphql(c,LINK,{url:shopeeUrl(body.url)},fetcher)).generateShortLink;
+  const result=(await graphql(c,linkQuery(shopeeUrl(body.url)),undefined,fetcher)).generateShortLink;
   if(typeof result?.shortLink!=='string')throw new Failure(502,'shopee_invalid_response');
   try{shopeeUrl(result.shortLink)}catch{throw new Failure(502,'shopee_invalid_response')}
   return {affiliate_url:result.shortLink};
