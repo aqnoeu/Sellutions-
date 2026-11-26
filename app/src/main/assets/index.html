@@ -291,11 +291,6 @@ function disconnectTikTokShop(){
  if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.disconnectTikTok==='function')window.AndroidAffiliate.disconnectTikTok();
  else onAffiliateConnector('disconnected','Não conectada.');
 }
-function saveAffiliateEndpoint(){
- const u=$('affiliateServerUrl').value.trim();
- if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.configureBackend==='function')window.AndroidAffiliate.configureBackend(u);
- else onAffiliateConnector('error','Configuração disponível somente no APK Android.');
-}
 function refreshAppVersion(){
  const el=$('appVersion'); if(!el)return;
  if(window.AndroidUpdates&&typeof window.AndroidUpdates.version==='function')el.textContent='Versão instalada: '+window.AndroidUpdates.version();
