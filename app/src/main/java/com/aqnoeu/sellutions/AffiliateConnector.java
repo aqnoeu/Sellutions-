@@ -1,6 +1,9 @@
 package com.aqnoeu.sellutions;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.widget.EditText;
+import android.text.InputType;
 import android.content.Intent;
 import android.net.Uri;
 import android.webkit.JavascriptInterface;
@@ -21,40 +24,41 @@ public final class AffiliateConnector {
     private final WebView web;
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private volatile String session;
-    private volatile String backend;
+    private static final String OFFICIAL_BACKEND="https://sellutions.vercel.app";
+    private volatile String backend=OFFICIAL_BACKEND;
     AffiliateConnector(Activity a,WebView w){ activity=a;web=w; }
 
     @JavascriptInterface public void configureBackend(String address){
-        try {
-            Uri u=Uri.parse(address.trim());
-            if(!"https".equalsIgnoreCase(u.getScheme()) || u.getHost()==null ||
-                u.getUserInfo()!=null || u.getPort()!=-1 || u.getQuery()!=null || u.getFragment()!=null) {
-                emit("error","URL HTTPS pública inválida."); return;
-            }
-            backend="https://"+u.getHost().toLowerCase();
-            activity.getPreferences(Activity.MODE_PRIVATE).edit().putString("affiliate_endpoint",backend).apply();
-            emit("configuration","Endpoint salvo. A conexão só será confirmada após autorização oficial.");
-        } catch(Exception e){emit("error","Endpoint HTTPS inválido.");}
+        if(!OFFICIAL_BACKEND.equals(address==null?"":address.trim())){emit("error","Use somente o servidor oficial do Sellutions.");return;}
+        backend=OFFICIAL_BACKEND;
+        emit("configuration","Servidor oficial configurado.");
     }
     @JavascriptInterface public void init(){
-        backend=activity.getPreferences(Activity.MODE_PRIVATE).getString("affiliate_endpoint",null);
-        emit("configuration",backend==null?"Serviço TikTok ainda não configurado.":"Serviço configurado: "+backend);
+        backend=OFFICIAL_BACKEND;
+        emit("configuration","Servidor oficial configurado. Autorize a conta quando o piloto estiver liberado.");
     }
     @JavascriptInterface public void startTikTok(){
-        if(backend==null){emit("error","Configure primeiro o serviço oficial de integração.");return;}
-        worker.execute(()->{
-            try{
-                JSONObject result=request("/v1/tiktok/begin","POST",null);
-                if(!"pending".equals(result.optString("status")))throw new Exception("Autorização não iniciada.");
-                String next=result.getString("authorization_url");
-                Uri uri=Uri.parse(next);
-                if(!"https".equals(uri.getScheme()) ||
-                    !"shop.tiktok.com".equalsIgnoreCase(uri.getHost()))
-                    throw new Exception("Destino de autorização inválido.");
-                session=result.getString("session");
-                emit("pending","Autorização aberta. Conclua na plataforma oficial e depois toque em Verificar conexão.");
-                activity.runOnUiThread(()->activity.startActivity(new Intent(Intent.ACTION_VIEW,uri)));
-            }catch(Exception e){emit("error",e.getMessage());}
+        activity.runOnUiThread(()->{
+            EditText input=new EditText(activity);
+            input.setSingleLine(true); input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            new AlertDialog.Builder(activity).setTitle("Conectar TikTok Shop").setMessage("Informe o código de acesso do piloto. O login será feito no site oficial do TikTok.")
+                .setView(input).setNegativeButton("Cancelar",null).setPositiveButton("Continuar",(dialog,which)->{
+                    final String pilot=input.getText().toString().trim(); input.setText("");
+                    if(pilot.isEmpty()){emit("error","Informe o código do piloto.");return;}
+                    worker.execute(()->{
+                        try{
+                            JSONObject data=new JSONObject().put("pilot_code",pilot);
+                            JSONObject result=request("/v1/tiktok/begin","POST",null,data);
+                            if(!"pending".equals(result.optString("status")))throw new Exception("Autorização não iniciada.");
+                            Uri uri=Uri.parse(result.getString("authorization_url"));
+                            if(!"https".equals(uri.getScheme())||!"shop.tiktok.com".equalsIgnoreCase(uri.getHost())||!"/alliance/creator/auth".equals(uri.getPath())||uri.getUserInfo()!=null||uri.getPort()!=-1)
+                                throw new Exception("Destino de autorização inválido.");
+                            session=result.getString("session");
+                            emit("pending","Conclua a autorização no TikTok e depois toque em Verificar conexão.");
+                            activity.runOnUiThread(()->{try{activity.startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(Exception e){emit("error","Não foi possível abrir o navegador.");}});
+                        }catch(Exception e){emit("error",e.getMessage());}
+                    });
+                }).show();
         });
     }
     @JavascriptInterface public void checkTikTok(){
@@ -64,7 +68,7 @@ public final class AffiliateConnector {
                 JSONObject r=request("/v1/tiktok/status","GET",session);
                 String state=r.optString("status");
                 if("connected".equals(state) && r.optString("open_id").length()>0)
-                    emit("connected","TikTok Shop autorizado: "+r.optString("open_id"));
+                    emit("connected","Conta de criador autorizada e verificada pelo servidor.");
                 else emit("pending","TikTok Shop: "+state+". Sem acesso de afiliado confirmado.");
             }catch(Exception e){emit("error",e.getMessage());}
         });
@@ -72,11 +76,21 @@ public final class AffiliateConnector {
     @JavascriptInterface public void disconnectTikTok(){
         if(session==null){emit("disconnected","Nenhuma sessão TikTok neste aparelho.");return;}
         worker.execute(()->{
-            try {request("/v1/tiktok/disconnect","POST",session);}catch(Exception ignored){}
-            session=null;emit("disconnected","Sessão local encerrada. Revogue também na plataforma, se necessário.");
+            try {request("/v1/tiktok/disconnect","POST",session);session=null;emit("disconnected","Sessão do Sellutions encerrada. Para revogar acesso no TikTok, use a plataforma oficial.");}catch(Exception e){emit("error","Não foi possível confirmar a desconexão no servidor. Tente novamente.");}
         });
     }
-    private JSONObject request(String path,String method,String auth)throws Exception{
+    @JavascriptInterface public void searchTikTok(String query){
+        if(session==null){catalog(new JSONObject(),"Conecte o TikTok Shop em Preferências.");return;}
+        worker.execute(()->{try{
+            JSONObject result=request("/v1/tiktok/search","POST",session,new JSONObject().put("query",query));
+            catalog(result,"");
+        }catch(Exception e){catalog(new JSONObject(),e.getMessage());}});
+    }
+    private void catalog(JSONObject result,String error){
+        activity.runOnUiThread(()->{if(web!=null)web.evaluateJavascript("onTikTokCatalog("+JSONObject.quote(result.toString())+","+JSONObject.quote(error)+")",null);});
+    }
+    private JSONObject request(String path,String method,String auth)throws Exception{return request(path,method,auth,new JSONObject());}
+    private JSONObject request(String path,String method,String auth,JSONObject data)throws Exception{
         URL u=new URL(backend+path);
         HttpURLConnection c=(HttpURLConnection)u.openConnection();
         c.setConnectTimeout(12000);c.setReadTimeout(15000);c.setRequestMethod(method);
@@ -86,11 +100,11 @@ public final class AffiliateConnector {
         if("POST".equals(method)){
             c.setDoOutput(true);
             c.setRequestProperty("Content-Type","application/json");
-            try(OutputStream o=c.getOutputStream()){o.write("{}".getBytes(StandardCharsets.UTF_8));}
+            try(OutputStream o=c.getOutputStream()){o.write(data.toString().getBytes(StandardCharsets.UTF_8));}
         }
         try{
             int status=c.getResponseCode();
-            if(status<200||status>=300)throw new Exception("Serviço indisponível (HTTP "+status+").");
+            if(status<200||status>=300){if(status==503)throw new Exception("Piloto TikTok ainda não liberado.");if(status==403)throw new Exception("Acesso não autorizado ou permissões insuficientes.");if(status==401)throw new Exception("Sessão expirada. Conecte novamente.");if(status==409)throw new Exception("Autorização pendente ou renovação em andamento.");throw new Exception("Serviço indisponível (HTTP "+status+").");}
             try(InputStream i=c.getInputStream(); ByteArrayOutputStream b=new ByteArrayOutputStream()){
                 byte[] buf=new byte[4096];int n;
                 while((n=i.read(buf))!=-1){if(b.size()+n>65536)throw new Exception("Resposta excede limite");b.write(buf,0,n);}
