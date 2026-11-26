@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/v1/tiktok/:action",
+      "destination": "/api/tiktok/device?action=:action"
+    }
+  ]
+}
