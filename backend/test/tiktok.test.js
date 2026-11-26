@@ -24,7 +24,7 @@ test('mocked end-to-end: authorization, replay, API access, refresh, disconnect'
    if(u.hostname==='open-api.tiktokglobalshop.com'){assert.ok(opts.headers['x-tts-access-token']);assert.equal(u.searchParams.get('app_key'),'fake-key');assert.ok(u.searchParams.get('sign'));return fake({code:0,data:{creator_user_id:'creator'}})}
    throw Error('unexpected network');
  };
- try{await assert.rejects(t.begin(config,'wrong'),/pilot_code_invalid');const b=await t.begin(config,config.pilot);const state=new URL(b.authorization_url).searchParams.get('state');
+ try{await assert.rejects(t.begin(config,'wrong'),/pilot_code_invalid/);const b=await t.begin(config,config.pilot);const state=new URL(b.authorization_url).searchParams.get('state');
  assert.equal((await t.current(config,b.session)).status,'pending');await assert.rejects(t.complete(config,{state:t.random(),code:'fake-code'}),/invalid_state/);
  await t.complete(config,{state,code:'fake-code',app_key:'fake-key'});assert.equal(calls,1);await assert.rejects(t.complete(config,{state,code:'fake-code'}),/invalid_state/);assert.equal(calls,1);
  const got=await t.current(config,b.session);assert.equal(got.access,'new-access');assert.equal(refresh,1);assert.ok(!JSON.stringify([...records.values()]).includes('new-access'));assert.ok(!JSON.stringify([...records.values()]).includes('fake-refresh'));
