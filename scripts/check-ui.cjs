@@ -27,3 +27,5 @@ assert.ok(nav.includes('aria-current="page"'), 'Aba ativa deve ser acessível');
 assert.ok(!/[⌂▦▤♧]/.test(nav), 'Símbolos antigos devem ser removidos');
 assert.ok(!html.includes('products=[{'), 'Produtos fictícios não devem entrar na versão Android');
 console.log('Verificação estática OK: JavaScript válido, telas e marcas presentes.');
+
+require('./test-shopee-ui.cjs');
