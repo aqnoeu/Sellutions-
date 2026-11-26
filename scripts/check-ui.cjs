@@ -29,3 +29,10 @@ assert.ok(!html.includes('products=[{'), 'Produtos fictícios não devem entrar 
 console.log('Verificação estática OK: JavaScript válido, telas e marcas presentes.');
 
 require('./test-shopee-ui.cjs');
+
+// Product rule: no manually entered Sellutions integration codes or hidden static app secrets.
+for(const path of ['ShopeeConnector.java','AffiliateConnector.java']){
+ const source=fs.readFileSync('app/src/main/java/com/aqnoeu/sellutions/'+path,'utf8');
+ assert.doesNotMatch(source,/pilot_code|TIKTOK_PILOT_CODE|SHOPEE_PILOT_CODE|AlertDialog|EditText|TYPE_TEXT_VARIATION_PASSWORD/);
+}
+assert.doesNotMatch(html,/código privado do piloto|código de acesso do piloto|id="affiliateServerUrl"/i);
