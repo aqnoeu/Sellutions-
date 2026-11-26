@@ -78,38 +78,19 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 
 <p class="desc" style="margin-top:10px">A instalação de cada atualização exige sua confirmação no Android.</p>
 <div class="sectionhead"><h2>Contas de afiliados</h2></div>
-<details class="panel" style="padding:16px" id="affiliateHelp">
-<summary style="cursor:pointer;font-size:15px;font-weight:800">Como achar minha API pelo celular?</summary>
-<p class="desc" style="margin-top:12px">Passo a passo para afiliados Shopee que usam Android:</p>
-<ol style="padding-left:20px;font-size:13px;line-height:1.7;color:#5e4d44">
-<li>Abra o <b>Chrome</b> no celular (não o aplicativo Shopee).</li>
-<li>Acesse <b>affiliate.shopee.com.br/open_api</b> e entre na sua conta de afiliado.</li>
-<li>No Chrome, toque nos <b>três pontos (⋮)</b> e marque <b>Site para computador</b>, caso o menu da Shopee não apareça.</li>
-<li>Na página, procure <b>Abrir API</b> ou <b>Open API</b> no menu. Se houver o cartão <b>Meu API</b>, copie <b>App ID</b> e <b>Senha/Secret</b> da API. Não é sua senha de login.</li>
-</ol>
-<button class="ghost full" onclick="window.location.href='https://affiliate.shopee.com.br/open_api'">Abrir página da API Shopee</button>
-<div class="notice" style="margin-top:12px"><b>Não encontrou “Abrir API”?</b> Talvez sua conta ainda não tenha acesso. Procure no suporte da Shopee a solicitação <b>“Quero ativar a API”</b>. O acesso depende de análise da plataforma.</div>
-<div class="notice" style="margin-top:10px"><b>O link abriu o app Shopee?</b> Volte ao Chrome, digite o endereço na barra e tente abrir o site na versão para computador. Alguns celulares encaminham o login para o aplicativo.</div>
-<p class="desc" style="margin-top:12px"><b>Enquanto isso:</b> use seus próprios links de afiliado em Produtos. O Sellutions ainda não recebe App ID/Secret com segurança: não cole esses códigos no app nem os envie por mensagem.</p>
-<button class="ghost full" onclick="openTab('catalog')">Cadastrar meu link de afiliado</button>
-<p class="desc" style="margin-top:14px"><b>TikTok Shop:</b> não há API para você procurar no celular. O Sellutions precisa obter aprovação de integração no TikTok Shop Partner Center antes de oferecer login de criador.</p>
-</details>
+
 <div class="panel" style="padding:16px">
   <div class="setting"><div><strong>🛍️ Shopee Afiliados</strong><small>Conta pessoal · API de afiliados brasileira</small></div><span id="shopeeConnectionLabel" style="font-size:11px;color:#9e6714">Não conectada</span></div>
-  <p class="desc">Use somente o código privado do piloto. A conexão dura enquanto o aplicativo estiver aberto.</p>
+  <p class="desc">Conecte com um toque para pesquisar produtos e gerar links.</p>
   <div id="shopeeConnectionStatus" class="notice" role="status" aria-live="polite">Conecte para consultar o catálogo de afiliados.</div>
   <div class="templateactions"><button id="shopeeConnectBtn" class="primary" onclick="connectShopee()">Conectar</button><button class="ghost" onclick="disconnectShopee()">Desconectar</button></div>
   <button class="ghost full" onclick="openTab('catalog');setStore('Shopee')">Explorar ofertas Shopee</button>
   <div class="setting"><div><strong>🎵 TikTok Shop Creator</strong><small>Autorização oficial do criador, com consentimento</small></div><span id="tiktokConnectionLabel" style="font-size:11px;color:#9e6714">Não conectada</span></div>
-  <div class="notice" id="affiliateConnectionStatus" role="status" aria-live="polite">Servidor oficial definido. A conexão exige aprovação e liberação do piloto.</div>
+  <div class="notice" id="affiliateConnectionStatus" role="status" aria-live="polite">Autorize sua conta no site oficial do TikTok quando a integração estiver disponível.</div>
   <button class="primary full" style="margin-top:10px" onclick="connectTikTokShop()">Conectar TikTok Shop</button>
   <div class="templateactions"><button class="ghost" onclick="checkTikTokShop()">Verificar conexão</button><button class="ghost" onclick="disconnectTikTokShop()">Desconectar</button></div>
-  <details style="margin-top:10px"><summary style="color:#76594c;font-size:12px">Configuração técnica do mantenedor</summary>
-  <p class="desc">Somente configure o endereço HTTPS de um servidor Sellutions que já tenha sido aprovado pela plataforma. Não informe aqui senhas, App Secrets ou tokens de afiliado.</p>
-  <label class="templabel" for="affiliateServerUrl">Endereço HTTPS do servidor</label>
-  <input class="field" id="affiliateServerUrl" type="url" value="https://sellutions.vercel.app" readonly autocomplete="off">
-  <button class="ghost full" onclick="saveAffiliateEndpoint()">Salvar endereço</button></details>
-</div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> catálogo, preços, comissões e geração de links pelo servidor oficial<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div><div class="notice">Piloto fechado: servidor oficial Sellutions. Nenhuma credencial da API fica embutida neste APK.</div></section>
+
+</div><div class="sectionhead"><h2>Outras conexões</h2></div><div class="notice"><b>Shopee:</b> catálogo, preços, comissões e geração de links pelo servidor oficial<br><b>Groq:</b> integração pendente<br><b>WhatsApp:</b> integração Android local pendente</div></section>
 </div>
 <nav class="bottom" aria-label="Navegação principal"><button type="button" class="nav active" data-tab="home" onclick="openTab('home')" aria-label="Início" aria-current="page"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Início</span></button><button type="button" class="nav" data-tab="catalog" onclick="openTab('catalog')" aria-label="Produtos"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5L6 7Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Produtos</span></button><button type="button" class="nav" data-tab="queue" onclick="openTab('queue')" aria-label="Ofertas"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M3 11h18v9H3z"/><path d="M8 15h8"/></svg><span>Ofertas</span></button><button type="button" class="nav" data-tab="groups" onclick="openTab('groups')" aria-label="Grupos"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Grupos</span></button></nav>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div></div></div>
