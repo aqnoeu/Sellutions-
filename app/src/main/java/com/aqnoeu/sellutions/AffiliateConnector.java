@@ -1,9 +1,6 @@
 package com.aqnoeu.sellutions;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.widget.EditText;
-import android.text.InputType;
 import android.content.Intent;
 import android.net.Uri;
 import android.webkit.JavascriptInterface;
@@ -35,30 +32,21 @@ public final class AffiliateConnector {
     }
     @JavascriptInterface public void init(){
         backend=OFFICIAL_BACKEND;
-        emit("configuration","Servidor oficial configurado. Autorize a conta quando o piloto estiver liberado.");
+        emit("configuration","Servidor oficial configurado. Autorize sua conta no TikTok quando a integração estiver liberada.");
     }
     @JavascriptInterface public void startTikTok(){
-        activity.runOnUiThread(()->{
-            EditText input=new EditText(activity);
-            input.setSingleLine(true); input.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            new AlertDialog.Builder(activity).setTitle("Conectar TikTok Shop").setMessage("Informe o código de acesso do piloto. O login será feito no site oficial do TikTok.")
-                .setView(input).setNegativeButton("Cancelar",null).setPositiveButton("Continuar",(dialog,which)->{
-                    final String pilot=input.getText().toString().trim(); input.setText("");
-                    if(pilot.isEmpty()){emit("error","Informe o código do piloto.");return;}
-                    worker.execute(()->{
-                        try{
-                            JSONObject data=new JSONObject().put("pilot_code",pilot);
-                            JSONObject result=request("/v1/tiktok/begin","POST",null,data);
-                            if(!"pending".equals(result.optString("status")))throw new Exception("Autorização não iniciada.");
-                            Uri uri=Uri.parse(result.getString("authorization_url"));
-                            if(!"https".equals(uri.getScheme())||!"shop.tiktok.com".equalsIgnoreCase(uri.getHost())||!"/alliance/creator/auth".equals(uri.getPath())||uri.getUserInfo()!=null||uri.getPort()!=-1)
-                                throw new Exception("Destino de autorização inválido.");
-                            session=result.getString("session");
-                            emit("pending","Conclua a autorização no TikTok e depois toque em Verificar conexão.");
-                            activity.runOnUiThread(()->{try{activity.startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(Exception e){emit("error","Não foi possível abrir o navegador.");}});
-                        }catch(Exception e){emit("error",e.getMessage());}
-                    });
-                }).show();
+        worker.execute(()->{
+            try{
+                emit("pending","Abrindo autorização oficial do TikTok…");
+                JSONObject result=request("/v1/tiktok/begin","POST",null,new JSONObject());
+                if(!"pending".equals(result.optString("status")))throw new Exception("Autorização não iniciada.");
+                Uri uri=Uri.parse(result.getString("authorization_url"));
+                if(!"https".equals(uri.getScheme())||!"shop.tiktok.com".equalsIgnoreCase(uri.getHost())||!"/alliance/creator/auth".equals(uri.getPath())||uri.getUserInfo()!=null||uri.getPort()!=-1)
+                    throw new Exception("Destino de autorização inválido.");
+                session=result.getString("session");
+                emit("pending","Conclua a autorização no TikTok e depois toque em Verificar conexão.");
+                activity.runOnUiThread(()->{try{activity.startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(Exception e){emit("error","Não foi possível abrir o navegador.");}});
+            }catch(Exception e){emit("error",e.getMessage());}
         });
     }
     @JavascriptInterface public void checkTikTok(){
@@ -104,7 +92,7 @@ public final class AffiliateConnector {
         }
         try{
             int status=c.getResponseCode();
-            if(status<200||status>=300){if(status==503)throw new Exception("Piloto TikTok ainda não liberado.");if(status==403)throw new Exception("Acesso não autorizado ou permissões insuficientes.");if(status==401)throw new Exception("Sessão expirada. Conecte novamente.");if(status==409)throw new Exception("Autorização pendente ou renovação em andamento.");throw new Exception("Serviço indisponível (HTTP "+status+").");}
+            if(status<200||status>=300){if(status==503)throw new Exception("Integração TikTok ainda não liberada.");if(status==403)throw new Exception("Acesso não autorizado ou permissões insuficientes.");if(status==401)throw new Exception("Sessão expirada. Conecte novamente.");if(status==409)throw new Exception("Autorização pendente ou renovação em andamento.");throw new Exception("Serviço indisponível (HTTP "+status+").");}
             try(InputStream i=c.getInputStream(); ByteArrayOutputStream b=new ByteArrayOutputStream()){
                 byte[] buf=new byte[4096];int n;
                 while((n=i.read(buf))!=-1){if(b.size()+n>65536)throw new Exception("Resposta excede limite");b.write(buf,0,n);}
