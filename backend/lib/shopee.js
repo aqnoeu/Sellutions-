@@ -39,16 +39,18 @@ async function graphql(c,query,variables,fetcher=fetch){
     const code=Number(j.errors[0]?.extensions?.code??j.errors[0]?.code);
     if(code===10020||code===10035)throw new Failure(403,'shopee_authorization_failed');
     if(code===10030)throw new Failure(429,'shopee_rate_limit');
+    if(code===10010||code===11001)throw new Failure(502,'shopee_query_rejected');
+    if(code===10000)throw new Failure(502,'shopee_system_error');
     throw new Failure(502,'shopee_graphql_error');
   }
   if(!r.ok||!j?.data||typeof j.data!=='object')throw new Failure(502,'shopee_invalid_response');
   return j.data;
 }
-const searchQuery=({keyword,page,limit})=>'{productOfferV2(keyword:'+JSON.stringify(keyword)+',sortType:1,page:'+page+',limit:'+limit+'){nodes{itemId productName productLink offerLink imageUrl priceMin priceMax priceDiscountRate commissionRate} pageInfo{page limit hasNextPage}}}';
+const searchQuery=({keyword,page,limit})=>'{productOfferV2('+(keyword?'keyword:'+JSON.stringify(keyword)+',sortType:1,':'sortType:2,')+'page:'+page+',limit:'+limit+'){nodes{itemId productName productLink offerLink imageUrl priceMin priceMax priceDiscountRate commissionRate} pageInfo{page limit hasNextPage}}}';
 const linkQuery=url=>'mutation {generateShortLink(input:{originUrl:'+JSON.stringify(url)+'}){shortLink}}';
 function searchArgs(body){
   const keyword=typeof body.keyword==='string'?body.keyword.trim():'',page=body.page??1,limit=body.limit??10;
-  if(!keyword||keyword.length>100||!Number.isInteger(page)||page<1||page>100||!Number.isInteger(limit)||limit<1||limit>20)throw new Failure(400,'invalid_search');
+  if(keyword.length>100||!Number.isInteger(page)||page<1||page>100||!Number.isInteger(limit)||limit<1||limit>20)throw new Failure(400,'invalid_search');
   return {keyword,page,limit};
 }
 function shopeeUrl(raw){
@@ -71,15 +73,15 @@ async function link(c,body,fetcher=fetch){
 }
 async function handler(req,res){
   res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');
-  if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({error:'method_not_allowed'})}
+  if(req.method!=='POST'&&!(req.method==='GET'&&['status','search'].includes(req.query?.action))){res.setHeader('Allow','POST');return res.status(405).json({error:'method_not_allowed'})}
   try{
     const c=config();
-    const action=req.query?.action,body=req.body&&typeof req.body==='object'&&!Array.isArray(req.body)?req.body:{};
+    const action=req.query?.action,body=req.method==='GET'?{keyword:req.query?.keyword??'',page:Number(req.query?.page??1),limit:Number(req.query?.limit??10)}:req.body&&typeof req.body==='object'&&!Array.isArray(req.body)?req.body:{};
     if(!['status','search','link'].includes(action))throw new Failure(400,'invalid_action');
     if(action==='search')searchArgs(body);if(action==='link')shopeeUrl(body.url);
     await rate(c);await dailyLimit(c);
-    if(action==='status'){const result=await search(c,{keyword:'fone',limit:1});return res.status(200).json({status:'connected',product_search:true,offers_found:result.products.length})}
+    if(action==='status'){const result=await search(c,{keyword:'',limit:10});return res.status(200).json({status:'connected',product_search:true,offers_found:result.products.length,...result})}
     return res.status(200).json(action==='search'?await search(c,body):await link(c,body));
-  }catch(e){return res.status(e instanceof Failure?e.status:500).json({status:'error',error:e instanceof Failure?e.code:'internal_error'})}
+  }catch(e){const code=e instanceof Failure?e.code:'internal_error';console.warn('Shopee request failed',JSON.stringify({action:['status','search','link'].includes(req.query?.action)?req.query.action:'unknown',error:code,status:e instanceof Failure?e.status:500}));return res.status(e instanceof Failure?e.status:500).json({status:'error',error:code})}
 }
 module.exports={config,authorization,rate,dailyLimit,graphql,searchArgs,shopeeUrl,search,link,handler};

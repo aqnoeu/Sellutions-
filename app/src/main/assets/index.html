@@ -52,7 +52,7 @@ html,body{width:100%;height:100%;min-height:0;max-height:100%;overflow:hidden;ba
 <div class="wrap"><main class="device">
 <header class="apphead"><div class="appbrand"><img class="brand-svg" src="sellutions-icone.svg" alt="Ícone oficial Sellutions"><div><strong>Sellutions</strong><small id="subtitle">Encontrar e anunciar</small></div></div><button class="round" onclick="openTab('settings')" aria-label="Preferências"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96c-.5-.38-1.03-.69-1.62-.94L14.39 2.8a.49.49 0 0 0-.49-.4h-3.8a.49.49 0 0 0-.49.4L9.25 5.32c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 0 0-.6.22L2.72 8.84a.49.49 0 0 0 .12.64l2.03 1.58c-.05.3-.08.62-.08.94s.03.64.08.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.38.3.6.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.52c.04.24.24.4.49.4h3.8c.25 0 .45-.16.49-.4l.36-2.52c.59-.24 1.13-.56 1.62-.94l2.39.96c.23.08.48 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.02-1.58ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg></button></header>
 <div class="screen" id="scrollScreen">
-<section class="tab active" id="tab-home"><div class="hero"><img class="hero-symbol" src="sellutions-cifrao.svg" alt="" aria-hidden="true"><small>Olá! Vamos encontrar uma oferta?</small><h2>Anuncie em poucos toques.</h2><p>Escolha um produto e onde divulgar. Os textos ficam do seu jeito.</p></div><div class="quick"><button onclick="openTab('catalog')"><span>🛍️</span><div>Explorar<small>Shopee e TikTok Shop</small></div></button><button onclick="openTemplateEditor()"><span>✍️</span><div>Meus modelos<small>Personalizar textos</small></div></button></div><div class="sectionhead"><h2>Ofertas em destaque</h2><button class="linkbtn" onclick="openTab('catalog')">Ver produtos →</button></div><div class="empty"><div class="big">🛍️</div><b>Encontre ofertas reais</b><p>Conecte a Shopee em Preferências e explore o catálogo de afiliados.</p></div><div class="sectionhead"><h2>Minhas ofertas</h2><button class="linkbtn" onclick="openTab('queue')">Ver atividade →</button></div><div id="homeStatus" class="shortcut"></div></section>
+<section class="tab active" id="tab-home"><div class="hero"><img class="hero-symbol" src="sellutions-cifrao.svg" alt="" aria-hidden="true"><small>Olá! Vamos encontrar uma oferta?</small><h2>Anuncie em poucos toques.</h2><p>Escolha um produto e onde divulgar. Os textos ficam do seu jeito.</p></div><div class="quick"><button onclick="openTab('catalog')"><span>🛍️</span><div>Explorar<small>Shopee e TikTok Shop</small></div></button><button onclick="openTemplateEditor()"><span>✍️</span><div>Meus modelos<small>Personalizar textos</small></div></button></div><div class="sectionhead"><h2>Ofertas em destaque</h2><button class="linkbtn" onclick="openTab('catalog')">Ver produtos →</button></div><div id="homeShopeeStatus" class="notice" role="status" aria-live="polite">Conecte a Shopee para carregar ofertas.</div><button id="homeShopeeConnect" class="ghost full" onclick="connectShopee()">Conectar Shopee</button><div id="homeShopeeProducts" class="products"></div><div class="sectionhead"><h2>Minhas ofertas</h2><button class="linkbtn" onclick="openTab('queue')">Ver atividade →</button></div><div id="homeStatus" class="shortcut"></div></section>
 <section class="tab" id="tab-catalog"><h2 class="pageTitle">Explorar produtos</h2><p class="desc">Pesquisa interna do Sellutions. Sem dados fictícios.</p><div class="pills" id="storePills"><button class="pill selected" data-store="Shopee" onclick="setStore('Shopee')">Shopee</button><button class="pill" data-store="TikTok Shop" onclick="setStore('TikTok Shop')">TikTok Shop</button></div><label class="searchbox"><span>⌕</span><input id="search" maxlength="100" placeholder="Buscar: celular, tênis, casa..." autocomplete="off"></label><button id="searchProductsBtn" class="primary full" onclick="searchProducts()">Pesquisar produtos</button><div id="catalogStatus" class="notice" role="status" aria-live="polite">Conecte a Shopee para pesquisar ofertas reais.</div><button id="catalogConnectShopee" class="ghost full" onclick="connectShopee()">Conectar Shopee</button><div class="products" id="catalogProducts"></div><button id="shopeeMore" class="ghost full" style="margin-top:12px" hidden onclick="searchShopeePage(shopeePage+1)">Carregar mais</button>
 <div id="shopeeLinkPanel" class="panel" style="margin-top:17px;padding:15px">
 <h2>Gerar link ou preparar oferta</h2>
@@ -119,42 +119,56 @@ document.querySelectorAll('.nav').forEach(e=>{const selected=e.dataset.tab===tab
 $('subtitle').textContent=({home:'Encontrar e anunciar',catalog:'Escolha o produto',queue:'Acompanhe suas ofertas',groups:'Seus grupos',settings:'Tudo do seu jeito'})[tab];
 $('scrollScreen').scrollTop=0;
 if(tab==='settings')refreshAppVersion();
+if(tab==='catalog'&&selectedStore==='Shopee'&&shopeeConnected&&!shopeeSearchBusy&&!shopeePage)loadShopeeInitial();
 render();
 }
 function showSheet(html){$('modalBody').innerHTML=html;$('overlay').classList.add('open')}
 function closeSheet(){$('overlay').classList.remove('open')}
-let shopeeConnected=false,shopeePage=0,shopeeQuery='',shopeeSearchId=0,shopeeLinkId=0,shopeeSearchBusy=false,shopeeLinkBusy=false,shopeeNeedsLink=false;
+let shopeeConnected=false,shopeePage=0,shopeeQuery='',shopeeSearchId=0,shopeeLinkId=0,shopeeSearchBusy=false,shopeeLinkBusy=false,shopeeNeedsLink=false,shopeeInitial=null,shopeeConnecting=false;
 function setStore(value){
+ if(value===selectedStore){if(value==='Shopee'&&shopeeConnected&&!shopeePage&&!shopeeSearchBusy)loadShopeeInitial();return;}
  $('catalogProducts').replaceChildren();selectedStore=value;shopeeSearchId++;shopeeSearchBusy=false;shopeePage=0;shopeeQuery='';
  $('searchProductsBtn').disabled=false;$('shopeeMore').hidden=true;$('shopeeLinkPanel').hidden=value!=='Shopee';
  $('catalogConnectShopee').hidden=value!=='Shopee'||shopeeConnected;
  document.querySelectorAll('[data-store]').forEach(e=>e.classList.toggle('selected',e.dataset.store===value));
  $('catalogStatus').textContent=value==='Shopee'?(shopeeConnected?'Digite o produto que deseja encontrar.':'Conecte a Shopee para pesquisar ofertas reais.'):'TikTok Shop: conecte sua conta em Preferências.';
+ if(value==='Shopee'&&shopeeConnected)loadShopeeInitial();
 }
 function searchProducts(){
- const q=$('search').value.trim();if(!q){$('catalogStatus').textContent='Digite o nome de um produto para pesquisar.';return;}
+ const q=$('search').value.trim();
  if(selectedStore==='Shopee'){
-   if(!shopeeConnected){$('catalogStatus').textContent='Conecte a Shopee primeiro.';return;}
+   if(!shopeeConnected){connectShopee();return;}
    if(shopeeSearchBusy)return;
    shopeeQuery=q;shopeePage=0;$('catalogProducts').replaceChildren();searchShopeePage(1);return;
  }
+ if(!q){$('catalogStatus').textContent='Digite o nome de um produto para pesquisar.';return;}
  $('catalogProducts').replaceChildren();
  if(window.AndroidAffiliate&&typeof window.AndroidAffiliate.searchTikTok==='function'){
    $('catalogStatus').textContent='Consultando o catálogo autorizado do TikTok Shop…';window.AndroidAffiliate.searchTikTok(q);return;
  }
  $('catalogStatus').textContent='A API da loja ainda não está conectada.';
 }
-function connectShopee(){if(window.AndroidShopee)window.AndroidShopee.connect();else onShopeeConnection('error','Abra o APK Android atualizado.');}
+function connectShopee(){if(shopeeConnecting||shopeeConnected)return;if(window.AndroidShopee){shopeeConnecting=true;window.AndroidShopee.connect();}else onShopeeConnection('error','Abra o APK Android atualizado.');}
 function disconnectShopee(){if(window.AndroidShopee)window.AndroidShopee.disconnect();else onShopeeConnection('disconnected','Não conectada.');}
-function onShopeeConnection(status,message){
- shopeeConnected=status==='connected';$('shopeeConnectionLabel').textContent=shopeeConnected?'Conectada':status==='connecting'?'Verificando…':'Não conectada';
+function onShopeeConnection(status,message,raw){
+ shopeeConnecting=status==='connecting';shopeeConnected=status==='connected';$('shopeeConnectionLabel').textContent=shopeeConnected?'Conectada':status==='connecting'?'Verificando…':'Não conectada';
  $('shopeeConnectionLabel').style.color=shopeeConnected?'#13894d':'#9e6714';$('shopeeConnectionStatus').textContent=message;
  $('shopeeConnectBtn').disabled=status==='connecting'||shopeeConnected;$('catalogConnectShopee').hidden=selectedStore!=='Shopee'||shopeeConnected;$('catalogConnectShopee').disabled=status==='connecting';
+ $('homeShopeeStatus').textContent=message;$('homeShopeeConnect').hidden=shopeeConnected;$('homeShopeeConnect').disabled=shopeeConnecting;
  if(selectedStore==='Shopee')$('catalogStatus').textContent=message;
- if(!shopeeConnected){shopeeSearchId++;shopeeLinkId++;shopeeSearchBusy=false;shopeeLinkBusy=false;$('searchProductsBtn').disabled=false;$('shopeeGenerateBtn').disabled=false;$('shopeeMore').hidden=true;if(selectedStore==='Shopee')$('catalogProducts').replaceChildren();}
+ if(!shopeeConnected){shopeeSearchId++;shopeeLinkId++;shopeeSearchBusy=false;shopeeLinkBusy=false;$('searchProductsBtn').disabled=false;$('shopeeGenerateBtn').disabled=false;$('shopeeMore').hidden=true;if(selectedStore==='Shopee')$('catalogProducts').replaceChildren();shopeePage=0;shopeeInitial=null;$('homeShopeeProducts').replaceChildren();return;}
+ try{shopeeInitial=raw?JSON.parse(raw):null;}catch(e){shopeeInitial=null;}
+ if(shopeeInitial&&Array.isArray(shopeeInitial.products)){renderShopeeHome(shopeeInitial.products);}
+ if(selectedStore==='Shopee')loadShopeeInitial();
+}
+function loadShopeeInitial(){
+ if(!shopeeConnected||shopeeSearchBusy||selectedStore!=='Shopee')return;
+ shopeeQuery=$('search').value.trim();shopeePage=0;$('catalogProducts').replaceChildren();
+ if(!shopeeQuery&&shopeeInitial&&Array.isArray(shopeeInitial.products)){onShopeeCatalog(++shopeeSearchId,JSON.stringify(shopeeInitial),'');return;}
+ searchShopeePage(1);
 }
 function searchShopeePage(page){
- if(!shopeeConnected||!shopeeQuery||shopeeSearchBusy||page>100||!window.AndroidShopee)return;
+ if(!shopeeConnected||shopeeSearchBusy||page>100||!window.AndroidShopee)return;
  shopeeSearchBusy=true;$('searchProductsBtn').disabled=true;$('shopeeMore').hidden=true;$('catalogStatus').textContent='Pesquisando ofertas na Shopee…';
  window.AndroidShopee.search(shopeeQuery,page,++shopeeSearchId);
 }
@@ -167,6 +181,7 @@ function shopeeCommission(v){if(v===null||v===undefined||v===''||!Number.isFinit
 function shopeeImage(raw){try{const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&['shopee.com.br','susercontent.com','shopeemobile.com'].some(d=>u.hostname===d||u.hostname.endsWith('.'+d))?u.href:'';}catch(e){return '';}}
 function shopeeEl(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function shopeeButton(label,cls,fn){const b=shopeeEl('button',cls,label);b.type='button';b.addEventListener('click',fn);return b;}
+function renderShopeeHome(products){const grid=$('homeShopeeProducts');grid.replaceChildren();for(const p of products.slice(0,4)){if(p&&typeof p.title==='string')grid.appendChild(makeShopeeCard(p,true));}$('homeShopeeStatus').textContent=grid.children.length?'Ofertas reais da Shopee · preços podem mudar.':'Nenhuma oferta retornada. Explore outros produtos.';}
 function onShopeeCatalog(id,raw,error){
  if(id!==shopeeSearchId||selectedStore!=='Shopee')return;
  shopeeSearchBusy=false;$('searchProductsBtn').disabled=false;
@@ -174,8 +189,12 @@ function onShopeeCatalog(id,raw,error){
  let data;try{data=JSON.parse(raw)}catch(e){$('catalogStatus').textContent='Resposta inválida.';return;}
  if(!Array.isArray(data.products)){$('catalogStatus').textContent='Resposta inválida.';return;}
  shopeePage++;const grid=$('catalogProducts');
- for(const p of data.products){
-   if(!p||typeof p.title!=='string')continue;
+ if(!shopeeQuery&&shopeePage===1){shopeeInitial=data;renderShopeeHome(data.products);}
+ for(const p of data.products){if(p&&typeof p.title==='string')grid.appendChild(makeShopeeCard(p,false));}
+ $('catalogStatus').textContent=grid.children.length?grid.children.length+' ofertas encontradas. Preços e comissões podem mudar.':'Nenhum produto encontrado.';
+ $('shopeeMore').hidden=!(data.has_next_page&&shopeePage<100);
+}
+function makeShopeeCard(p,home){
    const card=shopeeEl('article','product shopee-card');const imgUrl=shopeeImage(p.image_url);
    if(imgUrl){const img=shopeeEl('img','shopee-photo');img.src=imgUrl;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.addEventListener('error',()=>img.remove());card.appendChild(img);}
    card.append(shopeeEl('div','store','Shopee'),shopeeEl('h3','',p.title),shopeeEl('div','price',shopeePrice(p)||'Consulte o preço'));
@@ -185,13 +204,10 @@ function onShopeeCatalog(id,raw,error){
    const actions=shopeeEl('div','shopee-actions');
    const affiliate=typeof p.affiliate_url==='string'&&isShopeeLink(p.affiliate_url)?p.affiliate_url:'';
    const product=typeof p.product_url==='string'&&isShopeeLink(p.product_url)?p.product_url:'';
-   if(affiliate||product)actions.appendChild(shopeeButton('Preparar oferta','primary',()=>selectShopeeProduct(p,affiliate||product,!!affiliate)));
-   if(affiliate)actions.appendChild(shopeeButton('Copiar link de afiliado','ghost',()=>{window.AndroidShopee.copyLink(affiliate);$('catalogStatus').textContent='Link de afiliado copiado.';}));
+   if(affiliate||product)actions.appendChild(shopeeButton('Preparar oferta','primary',()=>{if(home){setStore('Shopee');openTab('catalog');}selectShopeeProduct(p,affiliate||product,!!affiliate);}));
+   if(affiliate)actions.appendChild(shopeeButton('Copiar link de afiliado','ghost',()=>{window.AndroidShopee.copyLink(affiliate);$(home?'homeShopeeStatus':'catalogStatus').textContent='Link de afiliado copiado.';}));
    if(product)actions.appendChild(shopeeButton('Ver na Shopee','ghost',()=>{window.location.href=product;}));
-   card.appendChild(actions);grid.appendChild(card);
- }
- $('catalogStatus').textContent=grid.children.length?grid.children.length+' ofertas encontradas. Preços e comissões podem mudar.':'Nenhum produto encontrado.';
- $('shopeeMore').hidden=!(data.has_next_page&&shopeePage<100);
+   card.appendChild(actions);return card;
 }
 function selectShopeeProduct(p,url,affiliate){
  shopeeLinkId++;shopeeLinkBusy=false;$('shopeeGenerateBtn').disabled=false;shopeeNeedsLink=!affiliate;

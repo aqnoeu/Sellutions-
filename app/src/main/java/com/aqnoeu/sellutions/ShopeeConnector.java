@@ -34,7 +34,7 @@ public final class ShopeeConnector {
             try{
                 JSONObject result=request("status",new JSONObject());
                 if(!"connected".equals(result.optString("status")))throw new Exception("Conexão não confirmada.");
-                if(g==generation&&!closed){connected=true;state("connected","Shopee conectada. Você já pode pesquisar produtos.");}
+                if(g==generation&&!closed){connected=true;eval("onShopeeConnection("+JSONObject.quote("connected")+","+JSONObject.quote("Shopee conectada.")+","+JSONObject.quote(result.toString())+")");}
             }catch(Exception e){if(g==generation&&!closed)state("error",message(e));}
         });
     }
@@ -44,7 +44,7 @@ public final class ShopeeConnector {
     @JavascriptInterface public void search(String keyword,int page,int id){
         final int g=generation;
         if(!connected){result("onShopeeCatalog",id,new JSONObject(),"Conecte a Shopee primeiro.");return;}
-        if(keyword==null||keyword.trim().isEmpty()||keyword.length()>100||page<1||page>100){result("onShopeeCatalog",id,new JSONObject(),"Pesquisa inválida.");return;}
+        if(keyword==null||keyword.length()>100||page<1||page>100){result("onShopeeCatalog",id,new JSONObject(),"Pesquisa inválida.");return;}
         worker.execute(()->{
             try{JSONObject r=request("search",new JSONObject().put("keyword",keyword.trim()).put("page",page).put("limit",10));
                 if(g==generation&&!closed)result("onShopeeCatalog",id,r,"");
@@ -76,11 +76,21 @@ public final class ShopeeConnector {
         }catch(Exception e){return false;}
     }
     private static final class HttpError extends Exception {
-        final int status;HttpError(int status){this.status=status;}
+        final int status;final String code;HttpError(int status,String code){this.status=status;this.code=code;}
     }
     private void expire(Exception e){if(e instanceof HttpError&&((HttpError)e).status==401){connected=false;state("disconnected","Conexão encerrada. Conecte novamente.");}}
     private static String message(Exception e){
-        if(e instanceof HttpError){switch(((HttpError)e).status){
+        if(e instanceof HttpError){HttpError error=(HttpError)e;
+            switch(error.code){
+                case "daily_limit":return "Limite diário de consultas atingido. Tente amanhã.";
+                case "shopee_query_rejected":return "A Shopee recusou os parâmetros da pesquisa.";
+                case "shopee_system_error":return "A Shopee apresentou um erro interno. Tente novamente.";
+                case "shopee_invalid_response":return "A Shopee retornou uma resposta inválida.";
+                case "shopee_unavailable":return "A Shopee não respondeu. Tente novamente.";
+                case "shopee_graphql_error":return "A Shopee recusou a consulta. Tente novamente.";
+                case "storage_unavailable":return "Servidor de consultas temporariamente indisponível.";
+            }
+            switch(error.status){
             case 400:return "Dados inválidos. Confira a pesquisa ou o link.";
             case 401:return "Conexão não autorizada pelo servidor.";
             case 403:return "A Shopee recusou a autorização da API.";
@@ -91,7 +101,7 @@ public final class ShopeeConnector {
         return "Não foi possível confirmar a resposta. Verifique sua conexão e tente novamente.";
     }
     private JSONObject request(String action,JSONObject data)throws Exception{
-        try{return requestOnce(action,data);}catch(HttpError e){if(e.status!=429)throw e;Thread.sleep(3200);return requestOnce(action,data);}
+        try{return requestOnce(action,data);}catch(HttpError e){if(e.status!=429||!"try_again_later".equals(e.code))throw e;Thread.sleep(3200);return requestOnce(action,data);}
     }
     private JSONObject requestOnce(String action,JSONObject data)throws Exception{
         HttpURLConnection c=(HttpURLConnection)new URL(BASE+action).openConnection();
@@ -100,7 +110,12 @@ public final class ShopeeConnector {
         c.setRequestProperty("Content-Type","application/json");c.setDoOutput(true);
         try{
             try(OutputStream o=c.getOutputStream()){o.write(data.toString().getBytes(StandardCharsets.UTF_8));}
-            int status=c.getResponseCode();if(status<200||status>=300)throw new HttpError(status);
+            int status=c.getResponseCode();if(status<200||status>=300){
+                String error="";try(InputStream in=c.getErrorStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){
+                    if(in!=null){byte[] buf=new byte[1024];int n;while((n=in.read(buf))!=-1&&out.size()+n<=4096)out.write(buf,0,n);error=new JSONObject(out.toString("UTF-8")).optString("error");}
+                }catch(Exception ignored){}
+                throw new HttpError(status,error);
+            }
             try(InputStream in=c.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){
                 byte[] buf=new byte[4096];int n;while((n=in.read(buf))!=-1){if(out.size()+n>262144)throw new Exception("Resposta muito grande");out.write(buf,0,n);}
                 return new JSONObject(out.toString("UTF-8"));
