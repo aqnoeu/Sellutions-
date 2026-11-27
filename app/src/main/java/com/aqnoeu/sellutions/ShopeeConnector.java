@@ -34,7 +34,7 @@ public final class ShopeeConnector {
             try{
                 JSONObject result=request("status",new JSONObject());
                 if(!"connected".equals(result.optString("status")))throw new Exception("Conexão não confirmada.");
-                if(g==generation&&!closed){connected=true;state("connected","Shopee conectada. Você já pode pesquisar produtos.");}
+                if(g==generation&&!closed){connected=true;eval("onShopeeConnection("+JSONObject.quote("connected")+","+JSONObject.quote("Shopee conectada.")+","+JSONObject.quote(result.toString())+")");}
             }catch(Exception e){if(g==generation&&!closed)state("error",message(e));}
         });
     }
@@ -44,7 +44,7 @@ public final class ShopeeConnector {
     @JavascriptInterface public void search(String keyword,int page,int id){
         final int g=generation;
         if(!connected){result("onShopeeCatalog",id,new JSONObject(),"Conecte a Shopee primeiro.");return;}
-        if(keyword==null||keyword.trim().isEmpty()||keyword.length()>100||page<1||page>100){result("onShopeeCatalog",id,new JSONObject(),"Pesquisa inválida.");return;}
+        if(keyword==null||keyword.length()>100||page<1||page>100){result("onShopeeCatalog",id,new JSONObject(),"Pesquisa inválida.");return;}
         worker.execute(()->{
             try{JSONObject r=request("search",new JSONObject().put("keyword",keyword.trim()).put("page",page).put("limit",10));
                 if(g==generation&&!closed)result("onShopeeCatalog",id,r,"");
