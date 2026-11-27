@@ -44,11 +44,11 @@ async function graphql(c,query,variables,fetcher=fetch){
   if(!r.ok||!j?.data||typeof j.data!=='object')throw new Failure(502,'shopee_invalid_response');
   return j.data;
 }
-const searchQuery=({keyword,page,limit})=>'{productOfferV2(keyword:'+JSON.stringify(keyword)+',sortType:1,page:'+page+',limit:'+limit+'){nodes{itemId productName productLink offerLink imageUrl priceMin priceMax priceDiscountRate commissionRate} pageInfo{page limit hasNextPage}}}';
+const searchQuery=({keyword,page,limit})=>'{productOfferV2('+(keyword?'keyword:'+JSON.stringify(keyword)+',sortType:1,':'sortType:2,')+'page:'+page+',limit:'+limit+'){nodes{itemId productName productLink offerLink imageUrl priceMin priceMax priceDiscountRate commissionRate} pageInfo{page limit hasNextPage}}}';
 const linkQuery=url=>'mutation {generateShortLink(input:{originUrl:'+JSON.stringify(url)+'}){shortLink}}';
 function searchArgs(body){
   const keyword=typeof body.keyword==='string'?body.keyword.trim():'',page=body.page??1,limit=body.limit??10;
-  if(!keyword||keyword.length>100||!Number.isInteger(page)||page<1||page>100||!Number.isInteger(limit)||limit<1||limit>20)throw new Failure(400,'invalid_search');
+  if(keyword.length>100||!Number.isInteger(page)||page<1||page>100||!Number.isInteger(limit)||limit<1||limit>20)throw new Failure(400,'invalid_search');
   return {keyword,page,limit};
 }
 function shopeeUrl(raw){
@@ -71,14 +71,14 @@ async function link(c,body,fetcher=fetch){
 }
 async function handler(req,res){
   res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');
-  if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({error:'method_not_allowed'})}
+  if(req.method!=='POST'&&!(req.method==='GET'&&req.query?.action==='status')){res.setHeader('Allow','POST');return res.status(405).json({error:'method_not_allowed'})}
   try{
     const c=config();
     const action=req.query?.action,body=req.body&&typeof req.body==='object'&&!Array.isArray(req.body)?req.body:{};
     if(!['status','search','link'].includes(action))throw new Failure(400,'invalid_action');
     if(action==='search')searchArgs(body);if(action==='link')shopeeUrl(body.url);
     await rate(c);await dailyLimit(c);
-    if(action==='status'){const result=await search(c,{keyword:'fone',limit:1});return res.status(200).json({status:'connected',product_search:true,offers_found:result.products.length})}
+    if(action==='status'){const result=await search(c,{keyword:'',limit:10});return res.status(200).json({status:'connected',product_search:true,offers_found:result.products.length,...result})}
     return res.status(200).json(action==='search'?await search(c,body):await link(c,body));
   }catch(e){return res.status(e instanceof Failure?e.status:500).json({status:'error',error:e instanceof Failure?e.code:'internal_error'})}
 }
