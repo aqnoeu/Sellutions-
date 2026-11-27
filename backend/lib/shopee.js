@@ -3,24 +3,31 @@ const crypto=require('node:crypto');
 const URL_API='https://open-api.affiliate.shopee.com.br/graphql';
 class Failure extends Error {constructor(status,code){super(code);this.status=status;this.code=code}}
 function config(env=process.env){
-  const id=env.SHOPEE_APP_ID,secret=env.SHOPEE_APP_SECRET,pilot=env.SHOPEE_PILOT_CODE||env.TIKTOK_PILOT_CODE;
+  const id=env.SHOPEE_APP_ID,secret=env.SHOPEE_APP_SECRET;
+  const enabled=env.SELLUTIONS_CODELESS_ENABLED==='true';
   const redis=env.UPSTASH_REDIS_REST_URL||env.KV_REST_API_URL,token=env.UPSTASH_REDIS_REST_TOKEN||env.KV_REST_API_TOKEN;
-  if(!/^\d+$/.test(id||'')||!secret||!pilot||pilot.length<24||!redis||!token)throw new Failure(503,'shopee_not_configured');
+  if(!/^\d+$/.test(id||'')||!secret||!enabled||!redis||!token)throw new Failure(503,'shopee_not_configured');
   let u;try{u=new URL(redis)}catch{throw new Failure(503,'shopee_not_configured')}
   if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||u.pathname!=='/')throw new Failure(503,'shopee_not_configured');
-  return {id,secret,pilot,redis:u.origin,token};
+  return {id,secret,redis:u.origin,token};
 }
 const digest=s=>crypto.createHash('sha256').update(s,'utf8').digest('hex');
 function authorization(c,payload,timestamp=Math.floor(Date.now()/1000)){
   return 'SHA256 Credential='+c.id+', Timestamp='+timestamp+', Signature='+digest(c.id+timestamp+payload+c.secret);
 }
-function authorize(req,c){
-  const h=req.headers.authorization||'';
-  if(typeof h!=='string'||h.length>512||!crypto.timingSafeEqual(Buffer.from(digest(h)),Buffer.from(digest('Bearer '+c.pilot))))throw new Failure(401,'unauthorized');
-}
 async function rate(c,fetcher=fetch){
   try{const r=await fetcher(c.redis,{method:'POST',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(5000),headers:{Authorization:'Bearer '+c.token,'Content-Type':'application/json'},body:JSON.stringify(['SET','sellutions:shopee:rate','1','NX','EX',3])});
     if(!r.ok)throw Error();const j=await r.json();if(j.error||!Object.hasOwn(j,'result'))throw Error();if(j.result!=='OK')throw new Failure(429,'try_again_later');
+  }catch(e){if(e instanceof Failure)throw e;throw new Failure(503,'storage_unavailable')}
+}
+async function dailyLimit(c,fetcher=fetch){
+  // Atomic UTC daily budget for the deliberately code-free public catalog.
+  const key='sellutions:shopee:daily:'+new Date().toISOString().slice(0,10);
+  const script="local n=tonumber(redis.call('GET',KEYS[1]) or '0'); if n>=tonumber(ARGV[1]) then return 0 end; n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],86400) end; return 1";
+  try{
+    const r=await fetcher(c.redis,{method:'POST',redirect:'error',signal:AbortSignal.timeout(5000),headers:{Authorization:'Bearer '+c.token,'Content-Type':'application/json'},body:JSON.stringify(['EVAL',script,1,key,200])});
+    if(!r.ok)throw Error();const j=await r.json();if(j.error||!Object.hasOwn(j,'result'))throw Error();
+    if(j.result===0)throw new Failure(429,'daily_limit');if(j.result!==1)throw Error();
   }catch(e){if(e instanceof Failure)throw e;throw new Failure(503,'storage_unavailable')}
 }
 async function graphql(c,query,variables,fetcher=fetch){
@@ -66,12 +73,13 @@ async function handler(req,res){
   res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');
   if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({error:'method_not_allowed'})}
   try{
-    const c=config();authorize(req,c);
+    const c=config();
     const action=req.query?.action,body=req.body&&typeof req.body==='object'&&!Array.isArray(req.body)?req.body:{};
     if(!['status','search','link'].includes(action))throw new Failure(400,'invalid_action');
-    await rate(c);
+    if(action==='search')searchArgs(body);if(action==='link')shopeeUrl(body.url);
+    await rate(c);await dailyLimit(c);
     if(action==='status'){const result=await search(c,{keyword:'fone',limit:1});return res.status(200).json({status:'connected',product_search:true,offers_found:result.products.length})}
     return res.status(200).json(action==='search'?await search(c,body):await link(c,body));
   }catch(e){return res.status(e instanceof Failure?e.status:500).json({status:'error',error:e instanceof Failure?e.code:'internal_error'})}
 }
-module.exports={config,authorization,authorize,rate,graphql,searchArgs,shopeeUrl,search,link,handler};
+module.exports={config,authorization,rate,dailyLimit,graphql,searchArgs,shopeeUrl,search,link,handler};

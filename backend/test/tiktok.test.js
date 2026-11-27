@@ -10,13 +10,14 @@ test('only approved product fields returned',()=>assert.deepEqual(t.product({id:
 
 test('mocked end-to-end: authorization, replay, API access, refresh, disconnect',async()=>{
  const original=global.fetch;const records=new Map();let calls=0,refresh=0;
- const config={appKey:'fake-key',secret:'fake-secret',redis:'https://redis.example',redisToken:'fake',pilot:'this-is-only-a-fake-pilot-code',enc:c.enc};
+ const config={appKey:'fake-key',secret:'fake-secret',redis:'https://redis.example',redisToken:'fake',enc:c.enc};
  const fake=(v)=>new Response(JSON.stringify(v),{status:200});
  global.fetch=async(url,opts)=>{
    if(url===config.redis){const [cmd,k,v,...rest]=JSON.parse(opts.body);let result=null;
      if(cmd==='SET'){if(rest.includes('NX')&&records.has(k)||rest.includes('XX')&&!records.has(k))result=null;else{records.set(k,v);result='OK'}}
      if(cmd==='GET'||cmd==='GETDEL'){result=records.get(k)||null;if(cmd==='GETDEL')records.delete(k)}
      if(cmd==='DEL'){result=records.delete(k)?1:0}
+     if(cmd==='EVAL'){assert.equal(rest.at(-1),30);result=1}
      return fake({result});
    }
    const u=new URL(url);
@@ -24,7 +25,7 @@ test('mocked end-to-end: authorization, replay, API access, refresh, disconnect'
    if(u.hostname==='open-api.tiktokglobalshop.com'){assert.ok(opts.headers['x-tts-access-token']);assert.equal(u.searchParams.get('app_key'),'fake-key');assert.ok(u.searchParams.get('sign'));return fake({code:0,data:{creator_user_id:'creator'}})}
    throw Error('unexpected network');
  };
- try{await assert.rejects(t.begin(config,'wrong'),/pilot_code_invalid/);const b=await t.begin(config,config.pilot);const state=new URL(b.authorization_url).searchParams.get('state');
+ try{const b=await t.begin(config);const state=new URL(b.authorization_url).searchParams.get('state');
  assert.equal((await t.current(config,b.session)).status,'pending');await assert.rejects(t.complete(config,{state:t.random(),code:'fake-code'}),/invalid_state/);
  await t.complete(config,{state,code:'fake-code',app_key:'fake-key'});assert.equal(calls,1);await assert.rejects(t.complete(config,{state,code:'fake-code'}),/invalid_state/);assert.equal(calls,1);
  const got=await t.current(config,b.session);assert.equal(got.access,'new-access');assert.equal(refresh,1);assert.ok(!JSON.stringify([...records.values()]).includes('new-access'));assert.ok(!JSON.stringify([...records.values()]).includes('fake-refresh'));
